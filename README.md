@@ -3,6 +3,9 @@
 A beginner-friendly stock screener that matches stocks to your personal investing style.
 Most stock screeners throw a wall of numbers at you and assume you already know what they mean. StockMatch is different — it asks what you care about as an investor, scores any US stock against your personal criteria, and explains every number in plain English.
 
+<img width="800" height="431" alt="stockmatch-demo-lite" src="https://github.com/user-attachments/assets/9f7ffaf5-fa64-4818-8163-bdc0766ca94b" />
+
+
 ✨ Key Features
 
 🎯 Personal Investor Profile: A quick onboarding flow assesses your goals, time horizon, and risk tolerance, then auto-tunes your screening targets (Growth, Income, Safety, or Balanced).
