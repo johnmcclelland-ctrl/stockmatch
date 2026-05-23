@@ -37,4 +37,4 @@ StockMatch was built from scratch as a learning project — designing both the i
 StockMatch is an educational tool, not financial advice. The match scores and analysis are meant to help you learn how to evaluate stocks — not to tell you what to buy. Always do your own research and consider consulting a licensed financial advisor before investing.
 
 📄 License
-MIT — see Lisence for details.
+MIT — see LICENSE for details.
