@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>StockMatch — Find Your Perfect Stock</title>
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#060b15;--s1:#0c1322;--s2:#111d33;--s3:#172340;
+  --bd:rgba(255,255,255,0.055);--bd2:rgba(255,255,255,0.11);
+  --tx:#edf2fc;--tx2:#6a82a0;--tx3:#2a3e58;
+  --gr:#22c55e;--gbg:rgba(34,197,94,0.07);--gbd:rgba(34,197,94,0.2);
+  --rd:#ef4444;--rbg:rgba(239,68,68,0.07);--rbd:rgba(239,68,68,0.2);
+  --am:#f59e0b;--abg:rgba(245,158,11,0.07);--abd:rgba(245,158,11,0.2);
+  --bl:#3b82f6;--bbg:rgba(59,130,246,0.08);--bbd:rgba(59,130,246,0.2);
+  --r:14px;--rs:9px;
+  --shadow:0 2px 16px rgba(0,0,0,0.35);
+  --shadow-lg:0 8px 40px rgba(0,0,0,0.5)
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--tx);font-family:-apple-system,'SF Pro Text','Segoe UI',system-ui,sans-serif;min-height:100vh;font-size:14px;line-height:1.55}
+a{color:var(--bl);text-decoration:none}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px}
+
+/* Cards */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r);padding:20px;margin-bottom:14px;box-shadow:var(--shadow)}
+.inn{background:var(--s2);border:1px solid var(--bd);border-radius:var(--rs);padding:12px 15px}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;letter-spacing:.01em}
+.bg{background:var(--gbg);color:var(--gr);border:1px solid var(--gbd)}
+.bb{background:var(--bbg);color:var(--bl);border:1px solid var(--bbd)}
+.ba{background:var(--abg);color:var(--am);border:1px solid var(--abd)}
+.br{background:var(--rbg);color:var(--rd);border:1px solid var(--rbd)}
+
+/* Buttons */
+button{cursor:pointer;border:none;font-family:inherit;font-size:14px;transition:all .18s;outline:none;touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,0);-webkit-appearance:none}
+.bp{background:var(--bl);color:#fff;padding:11px 22px;border-radius:var(--rs);font-weight:600;letter-spacing:.01em;-webkit-appearance:none;}
+.bp:hover{background:#2563eb;}
+.bp:active{background:#1d4ed8;}
+.bs{background:var(--s2);color:var(--tx);padding:11px 20px;border-radius:var(--rs);border:1px solid var(--bd2)}
+.bs:hover{background:var(--s3);border-color:var(--bd2)}
+.bg2{background:transparent;color:var(--tx2);padding:7px 13px;border-radius:var(--rs);border:1px solid var(--bd)}
+.bg2:hover{background:var(--s2);color:var(--tx);border-color:var(--bd2)}
+.bsm{padding:5px 11px;font-size:12px}
+
+/* Inputs */
+input[type=text],input[type=password],textarea{background:var(--s2);border:1px solid var(--bd2);color:var(--tx);padding:11px 14px;border-radius:var(--rs);font-family:inherit;font-size:14px;width:100%;outline:none;transition:border-color .2s,box-shadow .2s}
+input:focus,textarea:focus{border-color:var(--bl);box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+input[type=range]{width:100%;accent-color:var(--bl);cursor:pointer;height:4px}
+
+/* Type */
+.muted{color:var(--tx2)}.small{font-size:12px}
+
+/* Grids */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+
+/* Divider */
+.dv{height:1px;background:var(--bd);margin:14px 0}
+
+/* Screens */
+.screen{display:none;pointer-events:none;visibility:hidden;}.screen.active{display:block;pointer-events:auto;visibility:visible;}
+
+/* Header */
+.hdr{background:rgba(6,11,21,.97);border-bottom:1px solid var(--bd);padding:13px 0;position:sticky;top:0;z-index:100;}
+
+/* Stock rows */
+.srow{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r);padding:15px 18px;margin-bottom:9px;display:flex;align-items:center;gap:13px;cursor:pointer;transition:all .18s;box-shadow:var(--shadow)}
+.srow:hover{border-color:rgba(59,130,246,.4);background:var(--s2)}
+
+/* Animations */
+@keyframes fi{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}.fi{animation:fi .28s ease}
+@keyframes sp{to{transform:rotate(360deg)}}
+.spin{width:30px;height:30px;border:3px solid var(--s3);border-top-color:var(--bl);border-radius:50%;animation:sp .75s linear infinite;margin:0 auto}
+
+/* Match ring */
+.match-ring{border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;border:3px solid;font-weight:800;flex-shrink:0}
+
+/* Industry cards */
+.ind-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:28px}
+.ind-card{background:var(--s1);border:2px solid var(--bd);border-radius:var(--r);padding:18px 14px;text-align:center;cursor:pointer;transition:all .2s;box-shadow:var(--shadow)}
+.ind-card:hover{border-color:rgba(59,130,246,.4);background:var(--s2);transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.ind-card.selected{border-color:var(--bl);background:linear-gradient(135deg,rgba(59,130,246,.12),rgba(59,130,246,.04));box-shadow:0 0 0 1px rgba(59,130,246,.3),var(--shadow-lg)}
+.ind-icon{font-size:32px;margin-bottom:9px}
+.ind-name{font-weight:700;font-size:13px;margin-bottom:3px}
+.ind-desc{font-size:11px;color:var(--tx2);line-height:1.4}
+
+/* Criteria cards */
+.crit-card{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r);margin-bottom:10px;overflow:hidden;transition:all .2s;box-shadow:var(--shadow)}
+.crit-card.active{border-color:var(--bd2)}
+.crit-card.off{opacity:.4}
+.crit-header{display:flex;align-items:center;gap:12px;padding:15px 18px;cursor:pointer;user-select:none}
+.crit-header:hover{background:rgba(255,255,255,.018)}
+.crit-body{padding:0 18px 16px;display:none}
+.crit-body.open{display:block}
+
+/* Toggle */
+.toggle{width:42px;height:24px;border-radius:12px;background:var(--s3);border:2px solid var(--bd2);position:relative;cursor:pointer;transition:all .2s;flex-shrink:0}
+.toggle.on{background:var(--bl);border-color:var(--bl)}
+.toggle::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:white;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.toggle.on::after{left:20px}
+
+/* Steps */
+.steps{display:flex;align-items:center;gap:0;margin-bottom:28px;overflow-x:auto;padding-bottom:2px}
+.step{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.step-num{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0}
+.step-num.done{background:var(--gr);color:#fff}
+.step-num.active{background:var(--bl);color:#fff;box-shadow:0 0 0 4px rgba(59,130,246,.2)}
+.step-num.inactive{background:var(--s3);color:var(--tx2)}
+.step-label{font-size:12px;font-weight:600}
+.step-label.active{color:var(--tx)}
+.step-label.inactive{color:var(--tx2)}
+.step-line{flex:1;height:2px;background:var(--s3);margin:0 8px;min-width:16px}
+.step-line.done{background:var(--gr)}
+
+/* Tab bar */
+.tab-btn{flex:1;background:transparent;color:var(--tx2);padding:10px 4px;font-size:13px;font-weight:600;border:none;border-bottom:2px solid transparent;transition:all .18s;cursor:pointer;white-space:nowrap}
+.tab-btn:hover{color:var(--tx)}
+.tab-btn.tab-active{color:var(--bl);border-bottom:2px solid var(--bl)}
+
+/* Survey */
+.survey-opt{background:var(--s2);border:2px solid var(--bd);border-radius:var(--r);padding:16px 14px;text-align:center;cursor:pointer;transition:all .2s}
+.survey-opt:hover{border-color:var(--bd2);background:var(--s3);transform:translateY(-1px)}
+.survey-opt.selected{border-color:var(--bl);background:linear-gradient(135deg,rgba(59,130,246,.12),rgba(59,130,246,.04))}
+
+/* Progress bar */
+.pbar{height:5px;background:var(--s3);border-radius:3px;overflow:hidden;margin-top:4px}
+.pfill{height:100%;border-radius:3px;transition:width .5s ease}
+
+/* Responsive */
+/* Tablet & small laptop */
+@media(max-width:820px){
+  .wrap{max-width:100%}
+}
+/* Mobile */
+@media(max-width:700px){
+  .g3,.g4{grid-template-columns:1fr 1fr}
+  .g2{grid-template-columns:1fr}
+  .ind-grid{grid-template-columns:repeat(2,1fr)}
+  #split-panel{grid-template-columns:1fr!important;gap:24px!important}
+  .steps{gap:0;margin-bottom:20px}
+  .step-label{display:none}
+  .step-line{min-width:10px;margin:0 4px}
+  .wrap{padding:0 14px}
+  .card{padding:15px;border-radius:12px}
+  .hdr{padding:11px 0}
+  .hdr .wrap{padding:0 14px}
+  .srow{padding:12px 14px;gap:11px}
+  #demo-grid{grid-template-columns:1fr 1fr!important;gap:9px}
+  .match-ring{flex-shrink:0}
+  .tab-btn{font-size:12px;padding:9px 0}
+  .ind-card{padding:15px 10px}
+  .ind-icon{font-size:28px;margin-bottom:6px}
+  .ind-name{font-size:12px}
+  .ind-desc{font-size:10px}
+  .crit-header{padding:14px;gap:11px}
+  .survey-opt{padding:14px 10px}
+  h1{font-size:26px!important}
+  h2{font-size:21px!important}
+  h3{font-size:15px!important}
+  /* Detail page header stacks */
+  #detail-body .match-ring{width:56px!important;height:56px!important}
+}
+/* Small phones */
+@media(max-width:430px){
+  #q1-options,#q2-options,#q3-options{grid-template-columns:1fr 1fr!important;gap:8px!important}
+  .g4{grid-template-columns:1fr 1fr}
+  .survey-opt{padding:13px 8px}
+  .ind-grid{grid-template-columns:1fr 1fr;gap:9px}
+  .bp{padding:12px 16px}
+  .badge{font-size:10px;padding:2px 7px}
+}
+/* Very small phones */
+@media(max-width:360px){
+  #demo-grid{grid-template-columns:1fr!important}
+  .wrap{padding:0 12px}
+  .card{padding:13px}
+  h1{font-size:24px!important}
+  .tab-btn{font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div class="screen active" id="scr-setup">
+<div style="min-height:100svh;display:flex;align-items:center;justify-content:center;padding:32px 20px;">
+  <div style="width:100%;max-width:440px;">
+
+    <!-- Logo + Title -->
+    <div style="text-align:center;margin-bottom:28px;">
+      <svg width="64" height="64" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom:16px;">
+        <rect width="72" height="72" rx="20" fill="#3b82f6"/>
+        <rect x="12" y="42" width="10" height="20" rx="3" fill="white" opacity=".5"/>
+        <rect x="31" y="26" width="10" height="36" rx="3" fill="white" opacity=".75"/>
+        <rect x="50" y="12" width="10" height="50" rx="3" fill="white"/>
+      </svg>
+      <h1 style="font-size:30px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px;color:#e8eef8;">StockMatch</h1>
+      <p style="color:var(--tx2);font-size:15px;line-height:1.6;">Find stocks that actually fit<br>your investing style.</p>
+    </div>
+
+    <!-- Primary CTA -->
+    <a href="#" onclick="event.preventDefault();showScr('scr-survey');return false;" style="display:block;width:100%;padding:16px;margin-bottom:12px;background:#3b82f6;color:#fff;border-radius:12px;font-size:16px;font-weight:700;text-align:center;text-decoration:none;box-sizing:border-box;-webkit-tap-highlight-color:transparent;">
+      Get Started — It's Free →
+    </a>
+    <p style="text-align:center;font-size:12px;color:var(--tx2);margin-bottom:24px;">Search any US stock. No signup. No setup.</p>
+
+    <!-- Feature pills -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--tx2);"><span style="color:#22c55e;">✓</span> Real financial data</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--tx2);"><span style="color:#22c55e;">✓</span> Personal match scores</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--tx2);"><span style="color:#22c55e;">✓</span> Plain-English analysis</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--tx2);"><span style="color:#22c55e;">✓</span> Built for beginners</div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<div class="screen" id="scr-survey">
+<div class="hdr">
+  <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:12px;"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+      <rect width="28" height="28" rx="8" fill="#3b82f6"/>
+      <rect x="5" y="16" width="4" height="8" rx="1" fill="white" opacity=".6"/>
+      <rect x="12" y="10" width="4" height="14" rx="1" fill="white" opacity=".8"/>
+      <rect x="19" y="5" width="4" height="19" rx="1" fill="white"/>
+    </svg><span style="font-weight:800;font-size:16px;letter-spacing:-.01em;">StockMatch</span></div>
+    <button class="bg2 bsm" onclick="showSettingsModal()">⚙ Settings</button>
+  </div>
+</div>
+<div class="wrap" style="padding-top:32px;padding-bottom:60px;max-width:680px;">
+
+  <!-- Step indicators -->
+  <div class="steps" style="margin-bottom:32px;">
+    <div class="step"><div class="step-num active">1</div><span class="step-label active">Your Goals</span></div>
+    <div class="step-line"></div>
+    <div class="step"><div class="step-num inactive">2</div><span class="step-label inactive">Industry</span></div>
+    <div class="step-line"></div>
+    <div class="step"><div class="step-num inactive">3</div><span class="step-label inactive">Set Targets</span></div>
+    <div class="step-line"></div>
+    <div class="step"><div class="step-num inactive">4</div><span class="step-label inactive">Find Match</span></div>
+  </div>
+
+  <h2 style="font-size:26px;font-weight:800;margin-bottom:8px;letter-spacing:-.02em;">What kind of investor are you?</h2>
+  <p class="muted" style="margin-bottom:28px;line-height:1.7;font-size:15px;">Three quick questions. No right answers. We use your responses to set up your screening targets — you can tweak everything after.</p>
+
+  <!-- Q1: Investing Goal -->
+  <div class="card" style="margin-bottom:16px;">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--bl);margin-bottom:10px;">01 / 03</div>
+    <h3 style="font-size:17px;font-weight:700;margin-bottom:6px;">What are you actually trying to do?</h3>
+    <p class="muted small" style="margin-bottom:16px;">Be honest — there's no wrong answer here.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;" id="q1-options">
+      <div class="survey-opt" data-q="goal" data-v="growth" onclick="selectOpt(this)">
+        <div style="font-size:28px;margin-bottom:8px;">🚀</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:4px;">Growth</div>
+        <div class="muted small">I want the stock to grow in value as fast as possible</div>
+      </div>
+      <div class="survey-opt" data-q="goal" data-v="income" onclick="selectOpt(this)">
+        <div style="font-size:28px;margin-bottom:8px;">💰</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:4px;">Income</div>
+        <div class="muted small">I want regular dividend payments from my stock</div>
+      </div>
+      <div class="survey-opt" data-q="goal" data-v="safety" onclick="selectOpt(this)">
+        <div style="font-size:28px;margin-bottom:8px;">🛡️</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:4px;">Safety</div>
+        <div class="muted small">I want a stable, low-risk company I can trust</div>
+      </div>
+      <div class="survey-opt" data-q="goal" data-v="balanced" onclick="selectOpt(this)">
+        <div style="font-size:28px;margin-bottom:8px;">⚖️</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:4px;">Balanced</div>
+        <div class="muted small">A mix of growth, income, and stability</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q2: Time horizon -->
+  <div class="card" style="margin-bottom:16px;">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--bl);margin-bottom:10px;">02 / 03</div>
+    <h3 style="font-size:17px;font-weight:700;margin-bottom:6px;">How long are you thinking?</h3>
+    <p class="muted small" style="margin-bottom:16px;">The longer you hold, the more short-term bumps you can ignore.</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;" id="q2-options">
+      <div class="survey-opt" data-q="horizon" data-v="short" onclick="selectOpt(this)">
+        <div style="font-size:28px;margin-bottom:8px;">📅</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:4px;">Short</div>
+        <div class="muted small">1–2 years</div>
+      </div>
+      <div class="survey-opt" data-q="horizon" data-v="medium" onclick="selectOpt(this)">
+        <div style="font-size:28px;margin-bottom:8px;">📆</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:4px;">Medium</div>
+        <div class="muted small">3–5 years</div>
+      </div>
+      <div class="survey-opt" data-q="horizon" data-v="long" onclick="selectOpt(this)">
+        <div style="font-size:28px;margin-bottom:8px;">🗓️</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:4px;">Long</div>
+        <div class="muted small">5+ years</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q3: Risk tolerance -->
+  <div class="card" style="margin-bottom:24px;">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--bl);margin-bottom:10px;">03 / 03</div>
+    <h3 style="font-size:17px;font-weight:700;margin-bottom:6px;">How would you react if your stock dropped 30%?</h3>
+    <p class="muted small" style="margin-bottom:16px;">Real question. Your answer changes everything about what a good stock looks like for you.</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;" id="q3-options">
+      <div class="survey-opt" data-q="risk" data-v="low" onclick="selectOpt(this)">
+        <div style="font-size:28px;margin-bottom:8px;">😌</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:4px;">I'd panic</div>
+        <div class="muted small">Capital preservation first</div>
+      </div>
+      <div class="survey-opt" data-q="risk" data-v="medium" onclick="selectOpt(this)">
+        <div style="font-size:28px;margin-bottom:8px;">🤔</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:4px;">I'd hold tight</div>
+        <div class="muted small">Some risk is fine</div>
+      </div>
+      <div class="survey-opt" data-q="risk" data-v="high" onclick="selectOpt(this)">
+        <div style="font-size:28px;margin-bottom:8px;">🎯</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:4px;">I'd buy more</div>
+        <div class="muted small">Volatility doesn\'t scare me</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="bp" id="survey-next" style="width:100%;font-size:15px;padding:14px;opacity:.5;" onclick="completeSurvey()" disabled>
+    See My Investor Profile →</button>
+</div>
+</div>
+
+<!-- STEP 1 — INDUSTRY -->
+<div class="screen" id="scr-step1">
+<div class="hdr">
+  <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:12px;"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+      <rect width="28" height="28" rx="8" fill="#3b82f6"/>
+      <rect x="5" y="16" width="4" height="8" rx="1" fill="white" opacity=".6"/>
+      <rect x="12" y="10" width="4" height="14" rx="1" fill="white" opacity=".8"/>
+      <rect x="19" y="5" width="4" height="19" rx="1" fill="white"/>
+    </svg><span style="font-weight:800;font-size:16px;letter-spacing:-.01em;">StockMatch</span><span class="badge bb" id="mode-badge">Live</span></div>
+    <button class="bg2 bsm" onclick="showSettingsModal()">⚙ Settings</button>
+  </div>
+</div>
+<div class="wrap" style="padding-top:32px;padding-bottom:60px;">
+  <!-- Step indicators -->
+  <div class="steps">
+    <div class="step"><div class="step-num done">✓</div><span class="step-label inactive">Your Goals</span></div>
+    <div class="step-line done"></div>
+    <div class="step"><div class="step-num active">2</div><span class="step-label active">Industry</span></div>
+    <div class="step-line"></div>
+    <div class="step"><div class="step-num inactive">3</div><span class="step-label inactive">Set Targets</span></div>
+    <div class="step-line"></div>
+    <div class="step"><div class="step-num inactive">4</div><span class="step-label inactive">Find Match</span></div>
+  </div>
+
+  <h2 style="font-size:24px;font-weight:800;margin-bottom:8px;">Pick your industries</h2>
+  <p class="muted" style="margin-bottom:12px;line-height:1.7;">A great tech stock and a great bank look nothing alike. Pick the sectors you're interested in — we'll calibrate your targets accordingly.</p>
+  <div class="inn" style="margin-bottom:20px;border-left:3px solid var(--bl);"><p class="muted small">💡 Pick as many as you want. If you're not sure, just choose one and explore from there.</p></div>
+
+  <div class="ind-grid" id="industry-grid"></div>
+
+  <div style="display:flex;justify-content:flex-end;">
+    <button class="bp" id="step1-next" style="font-size:15px;padding:13px 32px;" onclick="goToStep2()">Next — Set Your Targets →</button>
+  </div>
+</div>
+</div>
+
+<!-- STEP 2 — CRITERIA -->
+<div class="screen" id="scr-step2">
+<div class="hdr">
+  <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:12px;"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+      <rect width="28" height="28" rx="8" fill="#3b82f6"/>
+      <rect x="5" y="16" width="4" height="8" rx="1" fill="white" opacity=".6"/>
+      <rect x="12" y="10" width="4" height="14" rx="1" fill="white" opacity=".8"/>
+      <rect x="19" y="5" width="4" height="19" rx="1" fill="white"/>
+    </svg><span style="font-weight:800;font-size:16px;letter-spacing:-.01em;">StockMatch</span></div>
+    <button class="bg2 bsm" onclick="showSettingsModal()">⚙ Settings</button>
+  </div>
+</div>
+<div class="wrap" style="padding-top:32px;padding-bottom:60px;">
+  <!-- Step indicators -->
+  <div class="steps">
+    <div class="step"><div class="step-num done">✓</div><span class="step-label inactive" id="s2-ind-label">Industry</span></div>
+    <div class="step-line done"></div>
+    <div class="step"><div class="step-num active">2</div><span class="step-label active">Set Targets</span></div>
+    <div class="step-line"></div>
+    <div class="step"><div class="step-num inactive">3</div><span class="step-label inactive">Find Match</span></div>
+  </div>
+
+  <h2 style="font-size:24px;font-weight:800;margin-bottom:6px;">Set your targets for <span id="s2-industry-name" style="color:var(--bl);">your industry</span></h2>
+  <p class="muted" style="margin-bottom:8px;line-height:1.7;">Drag each slider to where you want the stock to land. Yellow markers are our starting suggestions. Tap any row to see what the number actually means.</p>
+  <div class="inn" style="margin-bottom:24px;border-left:3px solid var(--am);">
+    <p style="font-size:12px;color:var(--am);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">New here?</p>
+    <p class="muted small">Just leave the sliders alone and hit Next. We've already set them based on your answers. You can always come back and tweak.</p>
+  </div>
+
+  <div id="criteria-panel"></div>
+
+  <div style="display:flex;justify-content:space-between;margin-top:8px;">
+    <button class="bs" onclick="showScr('scr-step1')">← Back</button>
+    <button class="bp" style="font-size:15px;padding:13px 32px;" onclick="goToStep3()">Next — Find Your Match →</button>
+  </div>
+</div>
+</div>
+
+<!-- STEP 3 — SEARCH & RESULTS (tabbed) -->
+<div class="screen" id="scr-step3">
+<div class="hdr">
+  <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <svg width="24" height="24" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="8" fill="#3b82f6"/><rect x="5" y="16" width="4" height="8" rx="1" fill="white" opacity=".6"/><rect x="12" y="10" width="4" height="14" rx="1" fill="white" opacity=".8"/><rect x="19" y="5" width="4" height="19" rx="1" fill="white"/></svg>
+      <span style="font-weight:800;font-size:15px;white-space:nowrap;">StockMatch</span>
+      
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="bg2 bsm" onclick="showScr('scr-step2')">← Adjust</button>
+      <button class="bg2 bsm" onclick="showSettingsModal()">⚙ Settings</button>
+    </div>
+  </div>
+  <div class="wrap" style="display:flex;gap:0;border-top:1px solid var(--bd);margin-top:10px;">
+    <button id="tab-search" class="tab-btn tab-active" onclick="switchTab('search')">🔍 Search</button>
+    <button id="tab-explore" class="tab-btn" onclick="switchTab('explore')">🌐 Explore</button>
+    <button id="tab-marked" class="tab-btn" onclick="switchTab('marked')">⭐ Marked</button>
+  </div>
+</div>
+
+<div class="wrap" style="padding-top:20px;padding-bottom:60px;">
+
+  <!-- SEARCH TAB -->
+  <div id="tab-content-search">
+    <!-- Live mode search -->
+    <div id="live-search-bar">
+      <div style="display:flex;gap:10px;margin-bottom:8px;">
+        <input type="text" id="tick" placeholder="Search any US stock — e.g. AAPL, HD, NVDA, JPM" style="flex:1;font-size:15px;" onkeydown="if(event.key==='Enter')doSearch()" />
+        <button class="bp" onclick="doSearch()" style="white-space:nowrap;padding:11px 24px;">Match</button>
+      </div>
+      <p class="muted small" style="margin-bottom:16px;">Scoring <strong style="color:var(--tx);" id="active-count">10</strong> criteria · <span id="s3-industry-name" style="color:var(--bl);font-weight:600;">All Industries</span></p>
+    </div>
+    <!-- Demo mode stock grid -->
+    <div id="demo-search-bar" style="display:none;">
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:4px;letter-spacing:-.01em;">Browse Demo Stocks</h2>
+      <p class="muted small" style="margin-bottom:16px;">Tap any stock to see real financial data, business analysis, and a live price chart. <button onclick="showSettingsModal()" style="background:none;color:var(--bl);font-size:12px;padding:0;text-decoration:underline;cursor:pointer;">Connect your key</button> for any US stock + personalized matching.</p>
+      <div id="demo-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:20px;"></div>
+    </div>
+
+    <div id="load-div" style="display:none;text-align:center;padding:40px 20px;">
+      <div class="spin" style="margin-bottom:16px;"></div>
+      <p style="font-weight:600;font-size:15px;" id="load-msg">Pulling real financial data...</p>
+      <p class="muted small" style="margin-top:6px;">Usually takes about 10 seconds</p>
+    </div>
+
+    <div id="res-div" style="display:none;margin-bottom:20px;">
+      <div id="res-list"></div>
+    </div>
+
+    <!-- Suggested stocks section -->
+    <div style="margin-top:8px;">
+
+<div id="industry-picks" style="display:none;"></div>
+
+      <!-- Best matches so far -->
+      <div style="margin-bottom:20px;" id="best-matches-wrap">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <h3 style="font-size:13px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.04em;">Your best matches so far</h3>
+          <button class="bg2 bsm" onclick="clearHist()" style="font-size:10px;padding:4px 8px;">Clear</button>
+        </div>
+        <div id="best-matches">
+          <p class="muted small" style="padding:8px 0;">Run a few searches above — your top matches will rank here automatically.</p>
+        </div>
+      </div>
+
+
+
+    </div>
+  </div>
+
+  <!-- EXPLORE TAB -->
+  <div id="tab-content-explore" style="display:none;">
+    <h2 style="font-size:20px;font-weight:700;margin-bottom:4px;letter-spacing:-.01em;">Browse Stocks</h2>
+    <p class="muted small" style="margin-bottom:20px;">Every stock in your selected industries. Tap any to run the match instantly.</p>
+    <div id="explore-content"></div>
+  </div>
+
+  <!-- MARKED TAB -->
+  <div id="tab-content-marked" style="display:none;">
+    <h2 style="font-size:20px;font-weight:700;margin-bottom:4px;letter-spacing:-.01em;">Saved Stocks</h2>
+    <p class="muted small" style="margin-bottom:20px;">Stocks you've bookmarked. Tap to run the match.</p>
+    <div id="marked-content"></div>
+  </div>
+
+</div>
+</div>
+
+<!-- DETAIL SCREEN -->
+<div class="screen" id="scr-detail">
+<div class="hdr">
+  <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="bg2 bsm" onclick="goBack()">← Back</button>
+      <span style="font-weight:800;font-size:15px;" id="dh-tick"></span>
+      <span class="muted" id="dh-name" style="font-size:13px;"></span>
+    </div>
+    
+  </div>
+</div>
+<div class="wrap" style="padding-top:24px;padding-bottom:70px;" id="detail-body"></div>
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────
+const ST={
+  apiKey:localStorage.getItem('sc-key')||'',
+  mode:'live',
+  selectedIndustries:[],
+  survey:{goal:null,horizon:null,risk:null},
+  history:JSON.parse(localStorage.getItem('sc-hist')||'[]'),
+  current:null
+};
+
+// ── INDUSTRIES ─────────────────────────────────────
+const INDUSTRIES=[
+  {id:'tech',name:'Technology',icon:'💻',desc:'Software, AI, cloud, semiconductors',
+   defaults:{netMargin:20,currentRatio:2.0,debtEquity:0.6,revenueGrowth:15,peRatio:28,divYield:0.5,roe:18,grossMargin:60,ocfGrowth:12}},
+  {id:'finance',name:'Financial Services',icon:'🏦',desc:'Banks, insurance, investing',
+   defaults:{netMargin:22,currentRatio:1.2,debtEquity:1.5,revenueGrowth:8,peRatio:13,divYield:2.5,roe:12,grossMargin:55,ocfGrowth:6}},
+  {id:'healthcare',name:'Healthcare',icon:'🏥',desc:'Pharma, biotech, medical devices',
+   defaults:{netMargin:15,currentRatio:2.0,debtEquity:0.5,revenueGrowth:10,peRatio:22,divYield:1.5,roe:14,grossMargin:55,ocfGrowth:9}},
+  {id:'consumer',name:'Consumer Brands',icon:'🛍️',desc:'Retail, food, beverages, apparel',
+   defaults:{netMargin:10,currentRatio:1.5,debtEquity:0.8,revenueGrowth:7,peRatio:20,divYield:2.0,roe:15,grossMargin:40,ocfGrowth:7}},
+  {id:'energy',name:'Energy',icon:'⚡',desc:'Oil, gas, renewables, utilities',
+   defaults:{netMargin:12,currentRatio:1.3,debtEquity:0.7,revenueGrowth:5,peRatio:12,divYield:3.5,roe:10,grossMargin:35,ocfGrowth:5}},
+  {id:'industrial',name:'Industrials',icon:'🏭',desc:'Manufacturing, aerospace, transport',
+   defaults:{netMargin:10,currentRatio:1.5,debtEquity:0.9,revenueGrowth:7,peRatio:18,divYield:1.5,roe:13,grossMargin:32,ocfGrowth:7}},
+  {id:'realestate',name:'Real Estate',icon:'🏠',desc:'REITs, property, development',
+   defaults:{netMargin:18,currentRatio:1.2,debtEquity:1.2,revenueGrowth:5,peRatio:25,divYield:4.0,roe:8,grossMargin:60,ocfGrowth:4}},
+  {id:'comms',name:'Communication',icon:'📡',desc:'Telecom, media, streaming',
+   defaults:{netMargin:12,currentRatio:1.2,debtEquity:1.0,revenueGrowth:8,peRatio:18,divYield:2.0,roe:12,grossMargin:50,ocfGrowth:7}},
+  {id:'materials',name:'Basic Materials',icon:'⛏️',desc:'Mining, chemicals, metals',
+   defaults:{netMargin:12,currentRatio:1.5,debtEquity:0.6,revenueGrowth:6,peRatio:14,divYield:2.0,roe:10,grossMargin:30,ocfGrowth:5}},
+  {id:'any',name:'All Industries',icon:'🌐',desc:'No preference — show everything',
+   defaults:{netMargin:12,currentRatio:1.5,debtEquity:0.8,revenueGrowth:8,peRatio:20,divYield:1.5,roe:13,grossMargin:40,ocfGrowth:7}}
+];
+
+
+// ── INDUSTRY STOCKS ────────────────────────────────
+const INDUSTRY_STOCKS={
+  tech:[{t:'AAPL',n:'Apple',cap:'$3.3T'},{t:'MSFT',n:'Microsoft',cap:'$3.1T'},{t:'NVDA',n:'NVIDIA',cap:'$3.0T'},{t:'GOOGL',n:'Alphabet',cap:'$2.1T'},{t:'META',n:'Meta',cap:'$1.4T'},{t:'AMZN',n:'Amazon',cap:'$2.0T'},{t:'AMD',n:'AMD',cap:'$240B'},{t:'INTC',n:'Intel',cap:'$90B'}],
+  finance:[{t:'JPM',n:'JPMorgan',cap:'$710B'},{t:'BAC',n:'Bank of America',cap:'$310B'},{t:'GS',n:'Goldman Sachs',cap:'$170B'},{t:'V',n:'Visa',cap:'$550B'},{t:'MA',n:'Mastercard',cap:'$470B'},{t:'WFC',n:'Wells Fargo',cap:'$220B'},{t:'AXP',n:'AmEx',cap:'$200B'}],
+  healthcare:[{t:'LLY',n:'Eli Lilly',cap:'$750B'},{t:'UNH',n:'UnitedHealth',cap:'$450B'},{t:'JNJ',n:'Johnson & Johnson',cap:'$380B'},{t:'ABBV',n:'AbbVie',cap:'$310B'},{t:'MRK',n:'Merck',cap:'$280B'},{t:'PFE',n:'Pfizer',cap:'$160B'},{t:'ABT',n:'Abbott',cap:'$195B'}],
+  consumer:[{t:'WMT',n:'Walmart',cap:'$780B'},{t:'COST',n:'Costco',cap:'$390B'},{t:'HD',n:'Home Depot',cap:'$360B'},{t:'MCD',n:"McDonald's",cap:'$210B'},{t:'NKE',n:'Nike',cap:'$110B'},{t:'SBUX',n:'Starbucks',cap:'$90B'},{t:'TGT',n:'Target',cap:'$65B'}],
+  energy:[{t:'XOM',n:'ExxonMobil',cap:'$490B'},{t:'CVX',n:'Chevron',cap:'$290B'},{t:'COP',n:'ConocoPhillips',cap:'$130B'},{t:'NEE',n:'NextEra Energy',cap:'$150B'},{t:'SLB',n:'SLB',cap:'$55B'},{t:'EOG',n:'EOG Resources',cap:'$65B'}],
+  industrial:[{t:'GE',n:'GE Aerospace',cap:'$215B'},{t:'CAT',n:'Caterpillar',cap:'$190B'},{t:'HON',n:'Honeywell',cap:'$130B'},{t:'RTX',n:'RTX Corp',cap:'$160B'},{t:'DE',n:'John Deere',cap:'$115B'},{t:'UPS',n:'UPS',cap:'$90B'},{t:'BA',n:'Boeing',cap:'$100B'}],
+  realestate:[{t:'PLD',n:'Prologis',cap:'$100B'},{t:'AMT',n:'American Tower',cap:'$85B'},{t:'EQIX',n:'Equinix',cap:'$80B'},{t:'O',n:'Realty Income',cap:'$45B'},{t:'SPG',n:'Simon Property',cap:'$58B'}],
+  comms:[{t:'NFLX',n:'Netflix',cap:'$380B'},{t:'DIS',n:'Disney',cap:'$200B'},{t:'T',n:'AT&T',cap:'$160B'},{t:'VZ',n:'Verizon',cap:'$175B'},{t:'CMCSA',n:'Comcast',cap:'$145B'},{t:'SPOT',n:'Spotify',cap:'$80B'}],
+  materials:[{t:'LIN',n:'Linde',cap:'$220B'},{t:'APD',n:'Air Products',cap:'$55B'},{t:'FCX',n:'Freeport-McMoRan',cap:'$60B'},{t:'NEM',n:'Newmont',cap:'$50B'},{t:'DD',n:'DuPont',cap:'$30B'}],
+  any:[{t:'AAPL',n:'Apple',cap:'$3.3T'},{t:'MSFT',n:'Microsoft',cap:'$3.1T'},{t:'NVDA',n:'NVIDIA',cap:'$3.0T'},{t:'GOOGL',n:'Alphabet',cap:'$2.1T'},{t:'AMZN',n:'Amazon',cap:'$2.0T'},{t:'JPM',n:'JPMorgan',cap:'$710B'},{t:'WMT',n:'Walmart',cap:'$780B'},{t:'HD',n:'Home Depot',cap:'$360B'},{t:'JNJ',n:'J&J',cap:'$380B'},{t:'XOM',n:'ExxonMobil',cap:'$490B'}]
+};
+
+// ── CRITERIA DEFINITIONS ───────────────────────────
+const CRITERIA=[
+  {id:'netMargin',name:'Net Profit Margin',short:'Profit kept from every dollar of revenue',
+   detail:'Net profit margin shows what percentage of revenue becomes actual profit after ALL expenses — salaries, taxes, rent, everything. A 20% margin means for every $100 in sales, the company keeps $20. Higher is always better. Elite companies like Apple and Microsoft sit above 25%. Most solid businesses are 10–20%.',
+   unit:'%',min:0,max:40,step:1,suggest:15,
+   fn:d=>d.netProfitMargin*100,fmt:v=>v.toFixed(0)+'%',higherBetter:true},
+  {id:'currentRatio',name:'Current Ratio',short:'Can the company pay its short-term bills?',
+   detail:'Divides what a company owns short-term (cash, inventory) by what it owes short-term. Above 1 means they can cover their bills. Below 1 is a red flag. A healthy range is 1.2–2.5 — safe enough without hoarding too much idle cash.',
+   unit:'x',min:0.5,max:4,step:0.1,suggest:1.5,
+   fn:d=>d.currentRatio||0,fmt:v=>v.toFixed(1)+'x',higherBetter:true},
+  {id:'debtEquity',name:'Debt / Equity',short:'How much is the company borrowing vs what it owns?',
+   detail:'Compares total debt to shareholder equity. Under 1 means the company owns more than it owes. Above 2 means heavy reliance on borrowed money — riskier in downturns. Some industries like banking naturally run higher. Lower is generally safer for long-term investors.',
+   unit:'',min:0,max:3,step:0.1,suggest:0.8,
+   fn:d=>d.debtToEquity,fmt:v=>v.toFixed(1),higherBetter:false},
+  {id:'revenueGrowth',name:'Revenue Growth',short:'Is the company growing its sales each year?',
+   detail:'Measures how much total sales increased compared to last year. 10% growth means the company sold 10% more. Consistent growth is one of the strongest signals of a healthy business. Negative growth is a red flag — it means the business is shrinking.',
+   unit:'%',min:-10,max:30,step:1,suggest:10,
+   fn:d=>d.revenueGrowth||0,
+   fmt:v=>(v>0?'+':'')+v.toFixed(0)+'%',higherBetter:true},
+  {id:'peRatio',name:'P/E Ratio',short:'Are you paying a fair price for the earnings?',
+   detail:'Price-to-Earnings tells you how much investors pay per dollar of profit. A P/E of 20 means investors pay $20 for every $1 of annual earnings. This matters most vs the industry average. High P/E means investors expect fast growth. Low P/E might mean undervalued. The sweet spot is strong fundamentals at or below industry average P/E.',
+   unit:'x',min:5,max:50,step:1,suggest:20,
+   fn:d=>d.peRatio||0,fmt:v=>v.toFixed(0)+'x',higherBetter:false},
+  {id:'divYield',name:'Dividend Yield',short:'Annual income paid out to shareholders',
+   detail:'What percentage of the stock price is paid annually as dividends. A 2% yield on a $100 stock means you get $2/year per share just for holding it. Growth investors prefer 0% (company reinvests all profits). Income investors prefer 2–4%. Very high yield (6%+) can signal a struggling company.',
+   unit:'%',min:0,max:6,step:0.1,suggest:1.5,
+   fn:d=>(d.dividendYield||0)*100,fmt:v=>v.toFixed(1)+'%',higherBetter:true},
+  {id:'roe',name:'Return on Equity (ROE)',short:'How efficiently does the company use shareholder money?',
+   detail:'ROE measures how much profit is generated for every dollar of shareholder equity. A 20% ROE means for every $100 shareholders invested, the company generates $20 of annual profit. Warren Buffett considers consistently high ROE (above 15%) as a hallmark of a genuinely excellent business with a real competitive advantage.',
+   unit:'%',min:0,max:50,step:1,suggest:15,
+   fn:d=>d.roe||0,fmt:v=>v.toFixed(0)+'%',higherBetter:true},
+  {id:'grossMargin',name:'Gross Margin',short:'Core profitability before overhead costs',
+   detail:'Shows how much profit remains after subtracting only the direct cost of making the product — before salaries, marketing, or rent. A 60% gross margin means $60 of every $100 in sales is available to cover overhead and generate profit. High gross margins (above 50%) signal real pricing power and competitive advantages. Software companies often hit 70–80%.',
+   unit:'%',min:0,max:80,step:1,suggest:40,
+   fn:d=>d.grossMargin||0,fmt:v=>v.toFixed(0)+'%',higherBetter:true},
+  {id:'ocfGrowth',name:'Cash Flow Growth',short:'Is the business generating more cash each year?',
+   detail:'Tracks whether the core business is generating more real cash year over year. Unlike revenue growth, this is purely about cash — harder to manipulate. Consistent positive cash flow growth (8%+) means the business is compounding in value. This is one of the most reliable signals for long-term investors.',
+   unit:'%',min:-20,max:40,step:1,suggest:8,
+   fn:d=>d.ocfGrowth||0,fmt:v=>(v>0?'+':'')+v.toFixed(0)+'%',higherBetter:true},
+  {id:'fcfPositive',name:'Free Cash Flow',short:'Does the company generate real cash after all expenses?',
+   detail:'Free cash flow is the actual cash a company generates after paying for operations AND capital investments (equipment, buildings, etc.). Unlike profit, FCF is very hard to fake. Positive FCF means the company funds its own growth. Negative FCF means it relies on debt or issuing new shares to survive. Warren Buffett considers FCF the most important financial metric.',
+   unit:'',min:0,max:1,step:1,suggest:1,
+   fn:d=>(d.freeCashFlow===null||d.freeCashFlow===undefined)?1:(d.freeCashFlow>0?1:0),
+   fmt:v=>v===1?'Positive':'Any',higherBetter:true,isBool:true}
+];
+
+const critState={};
+CRITERIA.forEach(c=>{critState[c.id]={on:true,value:c.suggest};});
+
+// ── DEMO DATA ──────────────────────────────────────
+const DEMO={
+  MSFT:{companyName:'Microsoft Corporation',sector:'Technology',industry:'Software',description:'Microsoft develops cloud services, software and devices globally. Azure is the #2 cloud platform.',currentPrice:415.2,marketCap:3090e9,revenue:[245122e6,211915e6],netIncome:[88136e6,72738e6],netProfitMargin:.359,cash:80e9,totalDebt:67e9,totalCurrentAssets:184e9,totalCurrentLiabilities:104e9,totalAssets:[512e9,484e9],totalLiabilities:[241e9,198e9],stockholdersEquity:271e9,freeCashFlow:[74e9,63e9],peRatio:36.2,dividendYield:.007,debtToEquity:.31,dividendGrowthYears:22,industryAvgPE:30,industryAvgDE:.8,roe:38.5,grossMargin:69.2,ocfGrowth:14.2,businessModel:'Microsoft earns most of its revenue from Azure cloud services, Office 365 subscriptions, and Windows licensing. Businesses pay recurring fees to use their software and infrastructure — generating highly predictable cash flows.',competitiveAdvantages:'Deep enterprise integration means once a company runs on Microsoft tools, switching costs are enormous. Azure benefits from massive scale, and the Office suite has near-universal adoption in corporate environments globally.',managementNotes:'CEO Satya Nadella transformed Microsoft from a stagnant software company into a cloud leader since 2014. Capital allocation has been excellent — strategic acquisitions alongside aggressive buybacks and growing dividends.',chartNotes:'Microsoft has been in a long-term uptrend since 2016 with relatively shallow drawdowns. During the 2022 selloff it fell roughly 30% but recovered within a year.'},
+  AAPL:{companyName:'Apple Inc.',sector:'Technology',industry:'Consumer Electronics',description:'Apple designs and sells smartphones, computers, tablets and services worldwide.',currentPrice:213.5,marketCap:3280e9,revenue:[391035e6,383285e6],netIncome:[99803e6,96995e6],netProfitMargin:.255,cash:65e9,totalDebt:97e9,totalCurrentAssets:153e9,totalCurrentLiabilities:156e9,totalAssets:[352e9,346e9],totalLiabilities:[287e9,290e9],stockholdersEquity:65e9,freeCashFlow:[111e9,99e9],peRatio:31.2,dividendYield:.005,debtToEquity:1.52,dividendGrowthYears:12,industryAvgPE:28,industryAvgDE:1.1,roe:160.1,grossMargin:45.5,ocfGrowth:11.3,businessModel:'Apple sells premium hardware — iPhone, Mac, iPad — then locks users into its ecosystem of App Store, iCloud, and Apple TV+. Services are the fastest-growing and highest-margin segment.',competitiveAdvantages:"The Apple ecosystem creates enormous switching costs. Users with an iPhone, Mac, and AirPods face significant friction to leave. The brand commands premium pricing competitors can\'t match despite similar hardware specs.",managementNotes:'CEO Tim Cook has been an exceptional capital allocator, returning over a trillion dollars to shareholders through buybacks since 2012. The shift toward services revenue has dramatically improved the margin profile.',chartNotes:'Apple shows a classic long-term compounder pattern — steady upward trend with periodic corrections that historically become buying opportunities. Fell about 27% in 2022 before recovering fully within months.'},
+  NVDA:{companyName:'NVIDIA Corporation',sector:'Technology',industry:'Semiconductors',description:'NVIDIA makes GPUs powering AI infrastructure, gaming, and data centers globally.',currentPrice:124.6,marketCap:3060e9,revenue:[130497e6,60922e6],netIncome:[72880e6,29760e6],netProfitMargin:.558,cash:34.8e9,totalDebt:8.46e9,totalCurrentAssets:71e9,totalCurrentLiabilities:17e9,totalAssets:[96e9,65e9],totalLiabilities:[27e9,22e9],stockholdersEquity:69e9,freeCashFlow:[67e9,27e9],peRatio:48.5,dividendYield:.001,debtToEquity:.42,dividendGrowthYears:3,industryAvgPE:38,industryAvgDE:.65,roe:123.8,grossMargin:74.6,ocfGrowth:142.3,businessModel:'NVIDIA sells GPUs that power AI training, data centers, and gaming. Hyperscalers like Microsoft and Google spend billions buying NVIDIA chips to run AI workloads — driving explosive revenue growth since 2023.',competitiveAdvantages:"NVIDIA\'s CUDA software ecosystem is the dominant platform for AI development. Most AI researchers have built their workflows on CUDA, making switching to AMD or Intel chips extremely difficult.",managementNotes:'CEO Jensen Huang co-founded NVIDIA and has led it for over 30 years. His early bet on AI — made years before the market understood it — is one of the great strategic calls in tech history.',chartNotes:'NVIDIA is one of the most volatile large-cap stocks ever — falling over 65% in 2022 before rising 1000%+ through 2024. Strong long-term trend but requires comfort with extreme short-term swings.'},
+  JPM:{companyName:'JPMorgan Chase & Co.',sector:'Financial Services',industry:'Banks',description:'JPMorgan is the largest US bank offering investment banking, commercial banking, and asset management.',currentPrice:248.3,marketCap:710e9,revenue:[167e9,158e9],netIncome:[51e9,49.5e9],netProfitMargin:.305,cash:508e9,totalDebt:418e9,totalCurrentAssets:900e9,totalCurrentLiabilities:650e9,totalAssets:[3900e9,3700e9],totalLiabilities:[3540e9,3360e9],stockholdersEquity:340e9,freeCashFlow:[55e9,48e9],peRatio:12.8,dividendYield:.022,debtToEquity:1.22,dividendGrowthYears:14,industryAvgPE:13,industryAvgDE:2.1,roe:16.2,grossMargin:61.8,ocfGrowth:8.4,businessModel:'JPMorgan makes money through interest on loans, fees from investment banking and trading, and wealth management services. Scale gives it advantages in cost, data, and capital that regional banks cannot replicate.',competitiveAdvantages:"JPMorgan's scale creates a network effect — more clients mean more data, better pricing, and lower costs. Its investment banking franchise and consumer brand are both top-tier globally.",managementNotes:'CEO Jamie Dimon is widely considered the best banker of his generation. His conservative approach ahead of 2008 while competitors took excessive risk — defining the bank\'s reputation for disciplined leadership.',chartNotes:'JPMorgan trends steadily upward long-term but is cyclical — fell sharply in 2008 and 2020 before recovering strongly both times. Dividend payments provide income through downturns.'},
+  TSLA:{companyName:'Tesla Inc.',sector:'Consumer Cyclical',industry:'Auto Manufacturers',description:'Tesla designs and sells electric vehicles and energy storage systems worldwide.',currentPrice:248.5,marketCap:790e9,revenue:[97690e6,96773e6],netIncome:[7926e6,14974e6],netProfitMargin:.081,cash:36e9,totalDebt:7.6e9,totalCurrentAssets:58e9,totalCurrentLiabilities:33e9,totalAssets:[122e9,106e9],totalLiabilities:[53e9,43e9],stockholdersEquity:69e9,freeCashFlow:[3.6e9,4.4e9],peRatio:98.5,dividendYield:0,debtToEquity:.18,dividendGrowthYears:0,industryAvgPE:15,industryAvgDE:1.8,roe:11.4,grossMargin:17.9,ocfGrowth:-22.3,businessModel:'Tesla sells electric vehicles directly to consumers — bypassing dealerships — and earns additional revenue from energy storage and Full Self-Driving software subscriptions.',competitiveAdvantages:'Tesla has a manufacturing cost advantage from proprietary battery technology and gigafactory scale. The Supercharger network, now adopted by other automakers, creates real switching costs for existing owners.',managementNotes:"CEO Elon Musk is a visionary who took Tesla from near-bankruptcy to the world\'s most valuable automaker. However, his involvement in multiple companies has become an increasing distraction and brand risk.",chartNotes:'Tesla is one of the most volatile stocks in the S&P 500 — capable of rising or falling 50%+ in a year. The long-term trend is sharply upward since 2019 but the ride is extreme.'},
+  AMC:{companyName:'AMC Entertainment',sector:'Communication Services',industry:'Entertainment',description:'AMC operates movie theaters across the US and Europe, severely impacted by streaming and COVID-19.',currentPrice:3.82,marketCap:1200e6,revenue:[4800e6,4500e6],netIncome:[-397e6,-523e6],netProfitMargin:-.083,cash:540e6,totalDebt:8900e6,totalCurrentAssets:890e6,totalCurrentLiabilities:1200e6,totalAssets:[8900e6,9100e6],totalLiabilities:[12000e6,11800e6],stockholdersEquity:-3100e6,freeCashFlow:[-200e6,-380e6],peRatio:null,dividendYield:0,debtToEquity:8.21,dividendGrowthYears:0,industryAvgPE:18,industryAvgDE:1.9,roe:-12.8,grossMargin:18.3,ocfGrowth:-47.2,businessModel:'AMC earns revenue from ticket sales, concessions, and premium format upcharges. The business is almost entirely dependent on Hollywood releasing popular films — a dependency made brutal by the rise of streaming.',competitiveAdvantages:'AMC has very little durable competitive advantage. Movie theaters are easily replicable, streaming is a permanent threat, and brand awareness has not translated into pricing power.',managementNotes:"CEO Adam Aron has focused on survival through equity raises and a controversial pivot into mining. Many investors view this as a desperate distraction rather than a credible business strategy.",chartNotes:'AMC was a meme stock phenomenon in 2021, rising over 3000% before collapsing 95%+ from its peak. The long-term chart is a cautionary tale about businesses with existential threats.'},
+  GOOGL:{companyName:'Alphabet Inc.',sector:'Technology',industry:'Internet & Search',description:'Alphabet owns Google — the world\'s dominant search engine — along with YouTube, Google Cloud, and other technology businesses.',currentPrice:175.8,marketCap:2150e9,revenue:[350018e6,307394e6],netIncome:[73795e6,59972e6],netProfitMargin:.211,cash:110e9,totalDebt:28e9,totalCurrentAssets:162e9,totalCurrentLiabilities:81e9,totalAssets:[402e9,365e9],totalLiabilities:[119e9,109e9],stockholdersEquity:283e9,freeCashFlow:[69e9,60e9],peRatio:24.1,dividendYield:0,debtToEquity:.18,dividendGrowthYears:0,industryAvgPE:28,industryAvgDE:.8,roe:26.0,grossMargin:56.5,ocfGrowth:16.8,businessModel:'Alphabet makes roughly 77% of revenue from advertising on Google Search and YouTube. When you search and click an ad, Google gets paid. The rest comes from Google Cloud and hardware.',competitiveAdvantages:'Google processes over 8 billion searches per day — a data advantage essentially impossible to replicate. YouTube is the second most visited website on earth. Almost nobody switches away from Google Search.',managementNotes:'CEO Sundar Pichai has led the AI transition while maintaining dominant market positions. The company executes a disciplined buyback program and holds strong insider ownership.',chartNotes:'Alphabet is a steady long-term compounder with a sharp but brief drop in 2022 before recovering. Tends to pull back during ad market slowdowns but recovers quickly as digital advertising keeps growing.'},
+  META:{companyName:'Meta Platforms',sector:'Technology',industry:'Social Media',description:'Meta owns Facebook, Instagram, and WhatsApp — three of the most used apps on earth, funded almost entirely by advertising.',currentPrice:585.0,marketCap:1480e9,revenue:[164501e6,134902e6],netIncome:[50735e6,39098e6],netProfitMargin:.309,cash:70e9,totalDebt:38e9,totalCurrentAssets:106e9,totalCurrentLiabilities:28e9,totalAssets:[229e9,185e9],totalLiabilities:[65e9,52e9],stockholdersEquity:164e9,freeCashFlow:[53e9,43e9],peRatio:29.2,dividendYield:.003,debtToEquity:.18,dividendGrowthYears:1,industryAvgPE:28,industryAvgDE:.8,roe:35.0,grossMargin:81.5,ocfGrowth:55.8,businessModel:'Meta earns money almost entirely from ads shown across Facebook and Instagram. Advertisers pay to reach specific audiences using detailed behavioral data Meta collects from billions of users.',competitiveAdvantages:"The network effect is Meta\'s moat — Facebook and Instagram are where everyone's friends already are, making it hard to leave. The advertising targeting is one of the most sophisticated systems ever built.",managementNotes:"CEO Mark Zuckerberg\'s Year of Efficiency in 2023 dramatically cut costs and improved margins. Capital allocation improved significantly with buybacks and a new dividend.",chartNotes:'Meta fell 75% from peak in 2022 before tripling in 2023 — showing underlying business strength. Long-term trend is strongly upward but with violent short-term swings.'},
+  HD:{companyName:'Home Depot',sector:'Consumer Cyclical',industry:'Home Improvement',description:"Home Depot is the world\'s largest home improvement retailer with over 2,300 stores, serving homeowners and professional contractors.",currentPrice:388.5,marketCap:386e9,revenue:[153669e6,157403e6],netIncome:[15144e6,17105e6],netProfitMargin:.099,cash:3.7e9,totalDebt:47e9,totalCurrentAssets:23e9,totalCurrentLiabilities:26e9,totalAssets:[76e9,71e9],totalLiabilities:[69e9,63e9],stockholdersEquity:7e9,freeCashFlow:[15e9,14.8e9],peRatio:26.3,dividendYield:.022,debtToEquity:6.7,dividendGrowthYears:14,industryAvgPE:22,industryAvgDE:2.1,roe:220.0,grossMargin:33.4,ocfGrowth:-7.2,businessModel:'Home Depot sells building materials, tools, and appliances to homeowners and professional contractors. The Pro contractor segment drives higher-value purchases and is a key growth focus.',competitiveAdvantages:"Scale gives Home Depot pricing power smaller stores can\'t match. Its supply chain — next-day delivery of heavy materials — is extremely difficult to replicate. Strong loyalty among professional contractors.",managementNotes:'CEO Ted Decker continues the Pro-customer strategy that transformed the business. Management returns capital through dividends and buybacks while investing in supply chain infrastructure.',chartNotes:'Home Depot is sensitive to housing cycles — fell sharply in 2022 when rate hikes cooled housing activity. Long-term trend is strongly upward, massively outperforming the broader market over a decade.'},
+  KO:{companyName:'Coca-Cola Company',sector:'Consumer Defensive',industry:'Beverages',description:'Coca-Cola is the world\'s largest beverage company, selling 200+ brands in 200+ countries including Coke, Sprite, and Dasani.',currentPrice:71.2,marketCap:306e9,revenue:[45754e6,43004e6],netIncome:[10714e6,9542e6],netProfitMargin:.234,cash:11e9,totalDebt:35e9,totalCurrentAssets:24e9,totalCurrentLiabilities:20e9,totalAssets:[98e9,93e9],totalLiabilities:[79e9,76e9],stockholdersEquity:19e9,freeCashFlow:[9.7e9,9.5e9],peRatio:28.6,dividendYield:.028,debtToEquity:1.84,dividendGrowthYears:62,industryAvgPE:22,industryAvgDE:.9,roe:43.0,grossMargin:60.5,ocfGrowth:10.8,businessModel:'Coca-Cola sells syrups to independent bottlers who handle canning and distribution. This asset-light model generates extremely high returns without the capital intensity of running factories.',competitiveAdvantages:'The Coca-Cola brand is valued at over $100 billion. Its global distribution network — built over 130 years — reaches virtually every point of sale on earth. Consumer habit creates switching resistance no competitor can overcome.',managementNotes:'CEO James Quincey has driven premiumization while trimming underperforming brands. Coca-Cola is a Dividend King with 62 consecutive years of increases — one of the best capital discipline records in business history.',chartNotes:'Coca-Cola is a textbook defensive stock — falls significantly less than the market in downturns and recovers steadily. It underperforms in bull markets but is one of the most reliable income stocks ever.'},
+  WMT:{companyName:'Walmart Inc.',sector:'Consumer Defensive',industry:'Discount Retail',description:'Walmart is the world\'s largest company by revenue with 10,500+ stores in 19 countries plus fast-growing e-commerce and advertising businesses.',currentPrice:96.5,marketCap:779e9,revenue:[665785e6,648125e6],netIncome:[15511e6,11680e6],netProfitMargin:.023,cash:9.8e9,totalDebt:42e9,totalCurrentAssets:75e9,totalCurrentLiabilities:93e9,totalAssets:[260e9,252e9],totalLiabilities:[182e9,176e9],stockholdersEquity:78e9,freeCashFlow:[16e9,9e9],peRatio:41.6,dividendYield:.009,debtToEquity:.54,dividendGrowthYears:51,industryAvgPE:22,industryAvgDE:.9,roe:20.0,grossMargin:24.8,ocfGrowth:21.2,businessModel:'Walmart earns profit through sheer volume at razor-thin retail margins. The growing advertising and Walmart+ membership businesses are now driving higher-margin revenue growth alongside the core retail operation.',competitiveAdvantages:"As the largest buyer from almost every major consumer goods manufacturer, Walmart has pricing power no competitor can match. Its supply chain represents decades of investment worth hundreds of billions to replicate.",managementNotes:'CEO Doug McMillon has pivoted Walmart toward e-commerce and advertising while protecting the core retail franchise. Walmart is a Dividend Aristocrat with 51 consecutive years of increases.',chartNotes:'Walmart held up exceptionally well during the 2022 selloff — gains market share in recessions as consumers trade down. Steady long-term upward trend with low volatility relative to the market.'},
+  V:{companyName:'Visa Inc.',sector:'Financial Services',industry:'Payment Networks',description:"Visa operates the world\'s largest electronic payments network — processing 200+ billion transactions annually without lending any money itself.",currentPrice:352.0,marketCap:556e9,revenue:[35926e6,32653e6],netIncome:[19741e6,17273e6],netProfitMargin:.550,cash:16e9,totalDebt:20e9,totalCurrentAssets:32e9,totalCurrentLiabilities:16e9,totalAssets:[92e9,85e9],totalLiabilities:[55e9,52e9],stockholdersEquity:37e9,freeCashFlow:[18e9,17e9],peRatio:32.1,dividendYield:.008,debtToEquity:.54,dividendGrowthYears:16,industryAvgPE:22,industryAvgDE:1.5,roe:49.0,grossMargin:80.4,ocfGrowth:11.5,businessModel:'Visa earns a small percentage of every transaction on its network without taking any credit risk. Every Visa tap anywhere in the world earns Visa a fee — one of the best business models ever built.',competitiveAdvantages:"Visa connects 4.3 billion cards to 130 million merchant locations. Building a competing network would require convincing both sides simultaneously — essentially impossible. Network effects compound with every new participant.",managementNotes:'CEO Ryan McInerney is expanding Visa into new payment flows — government disbursements and B2B payments. The business generates such high returns that buybacks and dividends are the primary capital allocation tools.',chartNotes:'Visa has been one of the most consistent compounders of the past decade with relatively shallow drawdowns. Pulled back about 20% in 2022 before recovering, consistent with its pattern of durable long-term outperformance.'},
+  COST:{companyName:'Costco Wholesale',sector:'Consumer Defensive',industry:'Warehouse Clubs',description:'Costco operates membership-only warehouse clubs where customers pay an annual fee to buy bulk goods at near-cost prices.',currentPrice:942.0,marketCap:419e9,revenue:[249636e6,238351e6],netIncome:[7367e6,6292e6],netProfitMargin:.030,cash:16e9,totalDebt:8.8e9,totalCurrentAssets:35e9,totalCurrentLiabilities:36e9,totalAssets:[73e9,66e9],totalLiabilities:[46e9,42e9],stockholdersEquity:27e9,freeCashFlow:[6.7e9,7.1e9],peRatio:58.4,dividendYield:.005,debtToEquity:.33,dividendGrowthYears:21,industryAvgPE:22,industryAvgDE:.9,roe:30.0,grossMargin:12.6,ocfGrowth:14.2,businessModel:"Costco sells goods at barely above cost and makes most profit from membership fees — $4B+ annually in near-pure margin revenue. Members feel they get such good deals that 90%+ renew every single year.",competitiveAdvantages:"The membership model creates a loyal customer base renewing at 90%+ annually. The Kirkland private label and treasure-hunt product mix create habitual shopping that\'s extremely hard to replicate.",managementNotes:"Costco\'s management culture — focused on employees, customer value, and long-term thinking over short-term margins — is deeply institutional. Consistent dividend growth and occasional special dividends reflect strong cash generation.",chartNotes:'Costco consistently trades at a valuation that looks expensive on traditional metrics, yet keeps outperforming. Relatively resilient in downturns as consumers perceive the membership value increasing when money is tight.'},
+  AMD:{companyName:'Advanced Micro Devices',sector:'Technology',industry:'Semiconductors',description:'AMD designs CPUs and GPUs that compete directly with Intel and NVIDIA across PCs, gaming consoles, and data centers.',currentPrice:122.0,marketCap:198e9,revenue:[25785e6,22680e6],netIncome:[1641e6,854e6],netProfitMargin:.064,cash:5.3e9,totalDebt:2.2e9,totalCurrentAssets:19e9,totalCurrentLiabilities:7e9,totalAssets:[69e9,67e9],totalLiabilities:[13e9,12e9],stockholdersEquity:56e9,freeCashFlow:[3.1e9,1.1e9],peRatio:118.0,dividendYield:0,debtToEquity:.04,dividendGrowthYears:0,industryAvgPE:38,industryAvgDE:.65,roe:2.9,grossMargin:49.4,ocfGrowth:91.0,businessModel:'AMD designs chips and outsources the actual manufacturing to foundries like TSMC. It earns money selling processors for laptops, desktops, gaming consoles (both PlayStation and Xbox use AMD chips), and increasingly the data center market where it competes with NVIDIA and Intel.',competitiveAdvantages:'AMD has closed a once-massive gap with Intel and now often beats it on performance per dollar. Its chips power both major game consoles, providing steady recurring revenue. However, it lacks the deep software moat that NVIDIA has with CUDA.',managementNotes:'CEO Lisa Su engineered one of the greatest corporate turnarounds in tech history, taking AMD from near-bankruptcy in 2014 to a serious rival of Intel and NVIDIA. She is widely regarded as one of the best CEOs in the semiconductor industry.',chartNotes:'AMD is highly volatile and tracks the broader semiconductor cycle. It soared during the AI boom but swings sharply on earnings and sector sentiment. A high-risk, high-reward name tied closely to chip demand.'},
+  NFLX:{companyName:'Netflix Inc.',sector:'Communication Services',industry:'Streaming',description:'Netflix is the world\'s largest subscription streaming service, producing and licensing TV shows and films for over 280 million subscribers globally.',currentPrice:925.0,marketCap:395e9,revenue:[39001e6,33723e6],netIncome:[8712e6,5408e6],netProfitMargin:.223,cash:7.8e9,totalDebt:14e9,totalCurrentAssets:14e9,totalCurrentLiabilities:9e9,totalAssets:[53e9,48e9],totalLiabilities:[28e9,28e9],stockholdersEquity:25e9,freeCashFlow:[6.9e9,6.9e9],peRatio:45.3,dividendYield:0,debtToEquity:.56,dividendGrowthYears:0,industryAvgPE:28,industryAvgDE:1.0,roe:34.8,grossMargin:46.1,ocfGrowth:61.1,businessModel:'Netflix charges monthly subscription fees for access to its library of original and licensed content. It now also earns growing revenue from a cheaper ad-supported tier and is cracking down on password sharing to convert freeloaders into paying subscribers.',competitiveAdvantages:'Netflix has enormous scale — its subscriber base lets it spend more on content than almost any competitor while spreading the cost across hundreds of millions of viewers. Its recommendation algorithm and global production capability are very hard to replicate.',managementNotes:'Co-CEOs Ted Sarandos and Greg Peters have navigated the shift from growth-at-all-costs to profitable growth, successfully launching the ad tier and password-sharing crackdown that reignited subscriber and revenue growth.',chartNotes:'Netflix crashed nearly 75% in 2022 on subscriber fears, then staged a massive multi-year recovery to new highs as profitability improved. The long-term trend is strong but it can move violently on subscriber numbers.'},
+  PLTR:{companyName:'Palantir Technologies',sector:'Technology',industry:'Software & Analytics',description:'Palantir builds data analytics and AI software used by governments and large enterprises to make sense of massive, complex datasets.',currentPrice:42.0,marketCap:96e9,revenue:[2865e6,2225e6],netIncome:[462e6,210e6],netProfitMargin:.161,cash:5.2e9,totalDebt:0.24e9,totalCurrentAssets:6e9,totalCurrentLiabilities:1e9,totalAssets:[6.3e9,4.5e9],totalLiabilities:[1.2e9,1e9],stockholdersEquity:5.1e9,freeCashFlow:[0.73e9,0.7e9],peRatio:207.0,dividendYield:0,debtToEquity:.05,dividendGrowthYears:0,industryAvgPE:38,industryAvgDE:.5,roe:9.1,grossMargin:80.0,ocfGrowth:55.0,businessModel:'Palantir sells software platforms (Gotham for government, Foundry for commercial) that help organizations integrate and analyze huge amounts of data. Its newer AI platform helps companies deploy large language models on their own private data.',competitiveAdvantages:'Palantir embeds deeply into customer operations, creating high switching costs — once an organization runs critical workflows on Palantir, ripping it out is enormously disruptive. It has rare credibility with defense and intelligence agencies.',managementNotes:'Co-founder and CEO Alex Karp is an unconventional, polarizing leader with a strong long-term vision. The company was founded with backing tied to national security and maintains deep government relationships, though Karp\'s public style divides investors.',chartNotes:'Palantir is extremely volatile and trades at a very high valuation, meaning expectations are sky-high. It has been one of the best-performing AI stocks but carries significant risk if growth slows.'},
+  BAC:{companyName:'Bank of America',sector:'Financial Services',industry:'Banks',description:'Bank of America is one of the largest US banks, serving consumers, businesses, and institutions with banking, lending, and wealth management.',currentPrice:44.5,marketCap:340e9,revenue:[101890e6,98581e6],netIncome:[27132e6,26515e6],netProfitMargin:.266,cash:333e9,totalDebt:295e9,totalCurrentAssets:700e9,totalCurrentLiabilities:500e9,totalAssets:[3260e9,3180e9],totalLiabilities:[2970e9,2890e9],stockholdersEquity:290e9,freeCashFlow:[30e9,28e9],peRatio:13.5,dividendYield:.022,debtToEquity:1.02,dividendGrowthYears:11,industryAvgPE:13,industryAvgDE:2.1,roe:9.3,grossMargin:55.0,ocfGrowth:6.0,businessModel:'Bank of America earns money from interest on loans and mortgages, fees on banking services and credit cards, and its large wealth management division (Merrill Lynch). Its enormous deposit base gives it cheap funding.',competitiveAdvantages:'BofA has massive scale and one of the largest retail deposit bases in the US, giving it low-cost funding. Its sheer size and brand recognition create stability, though it is more consumer-focused and rate-sensitive than peers like JPMorgan.',managementNotes:'CEO Brian Moynihan has run the bank since 2010, steering it from the wreckage of the 2008 financial crisis to consistent profitability with a focus on "responsible growth" and disciplined cost control.',chartNotes:'Bank of America is cyclical and sensitive to interest rates and recession fears. It fell hard in 2020 and during the 2023 regional bank scare before recovering. Pays a steady, growing dividend.'},
+  MA:{companyName:'Mastercard Inc.',sector:'Financial Services',industry:'Payment Networks',description:'Mastercard operates one of the world\'s two dominant payment networks, processing electronic transactions between banks, merchants, and consumers worldwide.',currentPrice:525.0,marketCap:480e9,revenue:[28167e6,25098e6],netIncome:[12874e6,11195e6],netProfitMargin:.457,cash:8.4e9,totalDebt:16e9,totalCurrentAssets:23e9,totalCurrentLiabilities:18e9,totalAssets:[48e9,42e9],totalLiabilities:[41e9,35e9],stockholdersEquity:7e9,freeCashFlow:[12e9,10.8e9],peRatio:37.3,dividendYield:.005,debtToEquity:2.3,dividendGrowthYears:13,industryAvgPE:22,industryAvgDE:1.5,roe:184.0,grossMargin:100.0,ocfGrowth:14.0,businessModel:'Like Visa, Mastercard takes a small fee on every transaction processed over its network without taking any lending risk — the banks issuing the cards bear that. Every swipe, tap, or online purchase on a Mastercard earns the company a slice.',competitiveAdvantages:'Mastercard and Visa form a near-duopoly in global payment networks. The two-sided network of billions of cards and tens of millions of merchants is virtually impossible to replicate, and it grows more valuable as cash use declines worldwide.',managementNotes:'CEO Michael Miebach has continued Mastercard\'s expansion into value-added services, cybersecurity, and new payment flows beyond traditional card transactions, diversifying the high-margin business.',chartNotes:'Mastercard is a steady long-term compounder with relatively modest drawdowns. It tracks consumer spending and global commerce, pulling back in recessions but recovering reliably.'},
+  DIS:{companyName:'The Walt Disney Company',sector:'Communication Services',industry:'Entertainment',description:'Disney is a global entertainment giant spanning theme parks, movie studios, streaming (Disney+), television networks, and consumer products.',currentPrice:112.0,marketCap:203e9,revenue:[91361e6,88898e6],netIncome:[4972e6,2354e6],netProfitMargin:.054,cash:6e9,totalDebt:47e9,totalCurrentAssets:25e9,totalCurrentLiabilities:31e9,totalAssets:[196e9,205e9],totalLiabilities:[92e9,100e9],stockholdersEquity:104e9,freeCashFlow:[8.6e9,4.9e9],peRatio:40.8,dividendYield:.008,debtToEquity:.45,dividendGrowthYears:1,industryAvgPE:28,industryAvgDE:1.0,roe:4.8,grossMargin:35.8,ocfGrowth:32.0,businessModel:'Disney makes money from theme parks and cruises, film and TV production, the Disney+ and Hulu streaming services, and licensing its enormous catalog of beloved characters and franchises for merchandise.',competitiveAdvantages:'Disney owns the most valuable collection of entertainment IP on earth — Marvel, Star Wars, Pixar, and the Disney classics. Its theme parks are nearly impossible to replicate, and its characters span generations, creating deep emotional brand loyalty.',managementNotes:'CEO Bob Iger returned in 2022 to stabilize the company after a rocky transition, focusing on making streaming profitable, fixing the film slate, and growing the highly profitable parks business.',chartNotes:'Disney struggled post-2021 as streaming losses and a weak film slate weighed on the stock. It has been working to recover as streaming turns profitable, but the chart reflects an ongoing turnaround story.'},
+  SBUX:{companyName:'Starbucks Corporation',sector:'Consumer Cyclical',industry:'Restaurants',description:'Starbucks is the world\'s largest coffeehouse chain, with over 38,000 stores globally serving coffee, food, and beverages.',currentPrice:98.0,marketCap:111e9,revenue:[36176e6,35976e6],netIncome:[3761e6,4125e6],netProfitMargin:.104,cash:3.3e9,totalDebt:25e9,totalCurrentAssets:7e9,totalCurrentLiabilities:9e9,totalAssets:[32e9,29e9],totalLiabilities:[40e9,37e9],stockholdersEquity:-8e9,freeCashFlow:[3.3e9,3.7e9],peRatio:29.5,dividendYield:.024,debtToEquity:0,dividendGrowthYears:14,industryAvgPE:22,industryAvgDE:1.5,roe:0,grossMargin:27.4,ocfGrowth:-8.0,businessModel:'Starbucks earns money selling coffee and food through company-owned and licensed stores worldwide. Its mobile app and rewards program drive a huge share of orders and create a powerful loyalty loop with prepaid balances.',competitiveAdvantages:'Starbucks has unmatched brand recognition in coffee, prime real estate locations, and one of the most successful loyalty programs in retail. Its app effectively functions as a major payment platform with billions in stored value.',managementNotes:'Brian Niccol, who previously turned around Chipotle, took over as CEO in 2024 with a mandate to fix slowing US sales, simplify operations, and restore the in-store experience. His track record raised investor hopes.',chartNotes:'Starbucks has traded sideways to down recently amid slowing same-store sales and challenges in China. The turnaround under new leadership is the key story driving the stock.'},
+  MCD:{companyName:"McDonald's Corporation",sector:'Consumer Cyclical',industry:'Restaurants',description:'McDonald\'s is the world\'s largest fast-food chain, operating and franchising over 40,000 restaurants across more than 100 countries.',currentPrice:295.0,marketCap:212e9,revenue:[25920e6,25494e6],netIncome:[8223e6,8469e6],netProfitMargin:.317,cash:1.1e9,totalDebt:38e9,totalCurrentAssets:5e9,totalCurrentLiabilities:5e9,totalAssets:[56e9,56e9],totalLiabilities:[65e9,66e9],stockholdersEquity:-5e9,freeCashFlow:[6.7e9,6.9e9],peRatio:25.8,dividendYield:.024,debtToEquity:0,dividendGrowthYears:48,industryAvgPE:22,industryAvgDE:1.5,roe:0,grossMargin:56.7,ocfGrowth:2.0,businessModel:'McDonald\'s is essentially a real estate and franchising business. It owns or leases the land and buildings, then collects rent and royalties from franchisees who run the restaurants — a high-margin, predictable income stream.',competitiveAdvantages:'McDonald\'s has the most recognized fast-food brand on earth, enormous scale that gives it purchasing power, prime real estate worldwide, and a franchise model that generates stable, growing royalty income with low capital needs.',managementNotes:'CEO Chris Kempczinski has focused on digital ordering, delivery, and value menus to drive traffic. McDonald\'s is a Dividend Aristocrat with nearly 50 consecutive years of dividend increases.',chartNotes:'McDonald\'s is a classic defensive stock — it holds up well in recessions as consumers trade down to cheaper food. Steady long-term uptrend with reliable, growing dividends.'},
+  F:{companyName:'Ford Motor Company',sector:'Consumer Cyclical',industry:'Auto Manufacturers',description:'Ford is one of America\'s oldest automakers, producing trucks, SUVs, commercial vehicles, and electric vehicles worldwide.',currentPrice:11.0,marketCap:44e9,revenue:[184992e6,176191e6],netIncome:[5879e6,4347e6],netProfitMargin:.032,cash:25e9,totalDebt:160e9,totalCurrentAssets:120e9,totalCurrentLiabilities:100e9,totalAssets:[285e9,273e9],totalLiabilities:[240e9,230e9],stockholdersEquity:45e9,freeCashFlow:[6.7e9,6.8e9],peRatio:7.5,dividendYield:.055,debtToEquity:3.5,dividendGrowthYears:0,industryAvgPE:15,industryAvgDE:1.8,roe:13.1,grossMargin:8.5,ocfGrowth:5.0,businessModel:'Ford makes money selling vehicles — especially highly profitable F-Series trucks — plus financing through Ford Credit and a growing commercial vehicle business (Ford Pro). Its EV division is currently a money-loser it is trying to scale.',competitiveAdvantages:'Ford\'s F-150 has been the best-selling truck in America for decades, generating enormous brand loyalty and profit. Its commercial fleet business is a strong, sticky franchise. However, autos are capital-intensive and cyclical with thin margins.',managementNotes:'CEO Jim Farley is pushing aggressively into EVs and software while trying to manage the costs of that transition. The strategy splits the company into legacy (Blue), electric (Model e), and commercial (Pro) units.',chartNotes:'Ford is cyclical, low-margin, and sensitive to recessions and EV-transition costs. The stock has traded in a wide range. The high dividend yield attracts income investors but the business carries real risk.'},
+  BA:{companyName:'The Boeing Company',sector:'Industrials',industry:'Aerospace & Defense',description:'Boeing is one of the two dominant commercial aircraft makers in the world, alongside Airbus, and a major US defense contractor.',currentPrice:178.0,marketCap:134e9,revenue:[66517e6,77794e6],netIncome:[-11829e6,-2222e6],netProfitMargin:-.178,cash:13e9,totalDebt:53e9,totalCurrentAssets:108e9,totalCurrentLiabilities:96e9,totalAssets:[156e9,137e9],totalLiabilities:[160e9,156e9],stockholdersEquity:-4e9,freeCashFlow:[-14e9,-2e9],peRatio:null,dividendYield:0,debtToEquity:0,dividendGrowthYears:0,industryAvgPE:25,industryAvgDE:1.5,roe:0,grossMargin:3.0,ocfGrowth:-150.0,businessModel:'Boeing makes money selling commercial jets to airlines and military aircraft and systems to governments. Commercial planes are sold in a duopoly with Airbus, while the defense unit provides more stable government revenue.',competitiveAdvantages:'Boeing operates in a global duopoly with Airbus — there are only two makers of large commercial jets, an enormous barrier to entry. However, recent quality and safety crises have badly damaged its reputation and finances.',managementNotes:'CEO Kelly Ortberg took over in 2024 with the urgent task of fixing Boeing\'s safety culture, production quality, and balance sheet after the 737 MAX crises and a damaging strike. It is a high-stakes turnaround.',chartNotes:'Boeing has been deeply troubled — burning cash, posting losses, and battered by safety scandals and production halts. The stock is a high-risk turnaround bet on whether new management can restore the once-great franchise.'},
+  PFE:{companyName:'Pfizer Inc.',sector:'Healthcare',industry:'Pharmaceuticals',description:'Pfizer is one of the world\'s largest pharmaceutical companies, developing vaccines and medicines across many disease areas.',currentPrice:26.0,marketCap:147e9,revenue:[63627e6,58496e6],netIncome:[8031e6,2119e6],netProfitMargin:.126,cash:1e9,totalDebt:64e9,totalCurrentAssets:35e9,totalCurrentLiabilities:35e9,totalAssets:[213e9,227e9],totalLiabilities:[125e9,138e9],stockholdersEquity:88e9,freeCashFlow:[9e9,5e9],peRatio:18.3,dividendYield:.066,debtToEquity:.73,dividendGrowthYears:14,industryAvgPE:18,industryAvgDE:.8,roe:9.1,grossMargin:70.0,ocfGrowth:25.0,businessModel:'Pfizer earns money developing, manufacturing, and selling prescription medicines and vaccines. Its revenue surged during COVID from its vaccine and antiviral, then fell sharply as that demand faded — leaving it reliant on its broader drug pipeline.',competitiveAdvantages:'Pfizer has enormous R&D scale, a vast global distribution network, and the financial firepower to acquire promising drug makers. However, like all pharma it faces patent cliffs where blockbuster drugs lose exclusivity and revenue drops.',managementNotes:'CEO Albert Bourla led Pfizer\'s rapid COVID vaccine development. Post-pandemic, management is using its cash to acquire new drugs (like the $43B Seagen cancer deal) to replace declining COVID revenue and patent-expiring products.',chartNotes:'Pfizer surged during COVID then fell substantially as vaccine revenue collapsed. The high dividend yield attracts income investors, but the stock reflects concerns about its pipeline replacing lost revenue.'},
+  JNJ:{companyName:'Johnson & Johnson',sector:'Healthcare',industry:'Pharmaceuticals & Devices',description:'Johnson & Johnson is a healthcare giant spanning pharmaceuticals and medical devices, known for decades of stability and dividend growth.',currentPrice:152.0,marketCap:366e9,revenue:[88821e6,85159e6],netIncome:[14066e6,35153e6],netProfitMargin:.158,cash:25e9,totalDebt:36e9,totalCurrentAssets:55e9,totalCurrentLiabilities:46e9,totalAssets:[180e9,167e9],totalLiabilities:[108e9,98e9],stockholdersEquity:72e9,freeCashFlow:[18e9,17e9],peRatio:26.0,dividendYield:.032,debtToEquity:.5,dividendGrowthYears:62,industryAvgPE:18,industryAvgDE:.8,roe:19.5,grossMargin:69.0,ocfGrowth:5.0,businessModel:'J&J makes money from prescription drugs (its largest and fastest-growing segment) and medical devices used in surgery, orthopedics, and vision. It spun off its consumer brands (Tylenol, Band-Aid) into a separate company called Kenvue.',competitiveAdvantages:'J&J has unmatched diversification across healthcare, an enormous R&D budget, deep relationships with hospitals and doctors, and one of the strongest balance sheets in the world (a rare AAA credit rating). This stability is its core strength.',managementNotes:'CEO Joaquin Duato has focused the company on higher-growth pharmaceuticals and medical technology after divesting the slower consumer division. Management is known for disciplined capital allocation and steady dividend growth.',chartNotes:'J&J is one of the most stable large-cap stocks — low volatility, defensive in downturns, and a Dividend King with over 60 consecutive years of increases. Litigation over talc products has been an occasional overhang.'}
+};
+
+
+// ── EXPLORE STOCKS
+// ── EXPLORE STOCKS (top ~25 per industry) ──────────
+const EXPLORE={
+  tech:[
+    {t:'AAPL',n:'Apple',cap:'$3.3T',d:'Consumer electronics & services'},
+    {t:'MSFT',n:'Microsoft',cap:'$3.1T',d:'Cloud & enterprise software'},
+    {t:'NVDA',n:'NVIDIA',cap:'$3.0T',d:'GPUs & AI infrastructure'},
+    {t:'GOOGL',n:'Alphabet',cap:'$2.1T',d:'Search, ads & cloud'},
+    {t:'META',n:'Meta Platforms',cap:'$1.4T',d:'Social media & VR'},
+    {t:'AMZN',n:'Amazon',cap:'$2.0T',d:'E-commerce & cloud'},
+    {t:'AMD',n:'Advanced Micro Devices',cap:'$240B',d:'CPUs & GPUs'},
+    {t:'INTC',n:'Intel',cap:'$90B',d:'Semiconductor chips'},
+    {t:'ORCL',n:'Oracle',cap:'$460B',d:'Enterprise software & cloud'},
+    {t:'CSCO',n:'Cisco',cap:'$220B',d:'Networking equipment'},
+    {t:'ADBE',n:'Adobe',cap:'$190B',d:'Creative & document software'},
+    {t:'CRM',n:'Salesforce',cap:'$275B',d:'CRM & cloud software'},
+    {t:'QCOM',n:'Qualcomm',cap:'$165B',d:'Mobile chips & wireless tech'},
+    {t:'TXN',n:'Texas Instruments',cap:'$165B',d:'Analog semiconductors'},
+    {t:'AVGO',n:'Broadcom',cap:'$830B',d:'Semiconductors & software'},
+    {t:'NOW',n:'ServiceNow',cap:'$200B',d:'Enterprise workflow automation'},
+    {t:'INTU',n:'Intuit',cap:'$175B',d:'TurboTax & QuickBooks'},
+    {t:'IBM',n:'IBM',cap:'$215B',d:'Enterprise tech & consulting'},
+    {t:'AMAT',n:'Applied Materials',cap:'$140B',d:'Chip manufacturing equipment'},
+    {t:'PANW',n:'Palo Alto Networks',cap:'$120B',d:'Cybersecurity'},
+    {t:'SNOW',n:'Snowflake',cap:'$55B',d:'Cloud data platform'},
+    {t:'PLTR',n:'Palantir',cap:'$220B',d:'AI & data analytics'},
+    {t:'UBER',n:'Uber',cap:'$165B',d:'Ride-sharing & delivery'},
+    {t:'SHOP',n:'Shopify',cap:'$130B',d:'E-commerce platform'},
+    {t:'NET',n:'Cloudflare',cap:'$40B',d:'Cloud networking & security'}
+  ],
+  finance:[
+    {t:'JPM',n:'JPMorgan Chase',cap:'$710B',d:'Largest US bank'},
+    {t:'BAC',n:'Bank of America',cap:'$310B',d:'Retail & investment banking'},
+    {t:'GS',n:'Goldman Sachs',cap:'$170B',d:'Investment banking & trading'},
+    {t:'MS',n:'Morgan Stanley',cap:'$185B',d:'Wealth mgmt & investment banking'},
+    {t:'V',n:'Visa',cap:'$550B',d:'Global payments network'},
+    {t:'MA',n:'Mastercard',cap:'$470B',d:'Global payments network'},
+    {t:'AXP',n:'American Express',cap:'$200B',d:'Premium credit cards'},
+    {t:'WFC',n:'Wells Fargo',cap:'$220B',d:'Retail & commercial banking'},
+    {t:'C',n:'Citigroup',cap:'$130B',d:'Global banking'},
+    {t:'BLK',n:'BlackRock',cap:'$155B',d:'Largest asset manager'},
+    {t:'SCHW',n:'Charles Schwab',cap:'$125B',d:'Discount brokerage'},
+    {t:'COF',n:'Capital One',cap:'$70B',d:'Credit cards & banking'},
+    {t:'USB',n:'US Bancorp',cap:'$70B',d:'Regional banking'},
+    {t:'PNC',n:'PNC Financial',cap:'$75B',d:'Regional banking'},
+    {t:'PYPL',n:'PayPal',cap:'$70B',d:'Digital payments'},
+    {t:'SQ',n:'Block (Square)',cap:'$45B',d:'Payment technology'},
+    {t:'COIN',n:'Coinbase',cap:'$65B',d:'Crypto exchange'},
+    {t:'AON',n:'Aon',cap:'$70B',d:'Insurance & risk management'},
+    {t:'MMC',n:'Marsh McLennan',cap:'$100B',d:'Insurance & consulting'},
+    {t:'ICE',n:'Intercontinental Exchange',cap:'$80B',d:'Financial exchanges'},
+    {t:'CME',n:'CME Group',cap:'$85B',d:'Futures & derivatives exchange'},
+    {t:'SPGI',n:'S&P Global',cap:'$145B',d:'Financial data & ratings'},
+    {t:'MCO',n:"Moody's",cap:'$85B',d:'Credit ratings & analytics'},
+    {t:'TRV',n:'Travelers',cap:'$55B',d:'Property & casualty insurance'},
+    {t:'PRU',n:'Prudential Financial',cap:'$40B',d:'Life insurance & investments'}
+  ],
+  healthcare:[
+    {t:'LLY',n:'Eli Lilly',cap:'$750B',d:'Diabetes & weight loss drugs'},
+    {t:'UNH',n:'UnitedHealth Group',cap:'$450B',d:'Health insurance & services'},
+    {t:'JNJ',n:'Johnson & Johnson',cap:'$380B',d:'Pharma & medical devices'},
+    {t:'ABBV',n:'AbbVie',cap:'$310B',d:'Immunology & oncology drugs'},
+    {t:'MRK',n:'Merck',cap:'$280B',d:'Keytruda & vaccines'},
+    {t:'PFE',n:'Pfizer',cap:'$160B',d:'Pharmaceuticals & vaccines'},
+    {t:'ABT',n:'Abbott Laboratories',cap:'$195B',d:'Medical devices & diagnostics'},
+    {t:'TMO',n:'Thermo Fisher',cap:'$200B',d:'Lab equipment & services'},
+    {t:'DHR',n:'Danaher',cap:'$155B',d:'Life science tools'},
+    {t:'BSX',n:'Boston Scientific',cap:'$130B',d:'Medical devices'},
+    {t:'MDT',n:'Medtronic',cap:'$95B',d:'Medical devices'},
+    {t:'ISRG',n:'Intuitive Surgical',cap:'$195B',d:'Robotic surgery systems'},
+    {t:'SYK',n:'Stryker',cap:'$145B',d:'Orthopedic implants'},
+    {t:'REGN',n:'Regeneron',cap:'$90B',d:'Biologic medicines'},
+    {t:'VRTX',n:'Vertex Pharma',cap:'$130B',d:'Cystic fibrosis treatments'},
+    {t:'GILD',n:'Gilead Sciences',cap:'$110B',d:'HIV & liver disease drugs'},
+    {t:'MRNA',n:'Moderna',cap:'$20B',d:'mRNA vaccines'},
+    {t:'BIIB',n:'Biogen',cap:'$30B',d:'Neurology drugs'},
+    {t:'DXCM',n:'Dexcom',cap:'$30B',d:'Continuous glucose monitors'},
+    {t:'EW',n:'Edwards Lifesciences',cap:'$40B',d:'Heart valve technology'},
+    {t:'HCA',n:'HCA Healthcare',cap:'$90B',d:'Hospital operator'},
+    {t:'CVS',n:'CVS Health',cap:'$90B',d:'Pharmacy & health insurance'},
+    {t:'CI',n:'Cigna',cap:'$85B',d:'Health insurance'},
+    {t:'HUM',n:'Humana',cap:'$30B',d:'Medicare advantage plans'},
+    {t:'IDXX',n:'IDEXX Laboratories',cap:'$35B',d:'Veterinary diagnostics'}
+  ],
+  consumer:[
+    {t:'WMT',n:'Walmart',cap:'$780B',d:'Largest US retailer'},
+    {t:'COST',n:'Costco',cap:'$390B',d:'Membership warehouse clubs'},
+    {t:'HD',n:'Home Depot',cap:'$360B',d:'Home improvement retail'},
+    {t:'MCD',n:"McDonald's",cap:'$210B',d:'Global fast food leader'},
+    {t:'NKE',n:'Nike',cap:'$110B',d:'Athletic footwear & apparel'},
+    {t:'SBUX',n:'Starbucks',cap:'$90B',d:'Global coffee chain'},
+    {t:'TGT',n:'Target',cap:'$65B',d:'Discount retail'},
+    {t:'LOW',n:"Lowe's",cap:'$155B',d:'Home improvement retail'},
+    {t:'BKNG',n:'Booking Holdings',cap:'$160B',d:'Online travel booking'},
+    {t:'MAR',n:'Marriott',cap:'$70B',d:'Global hotel chain'},
+    {t:'CMG',n:'Chipotle',cap:'$85B',d:'Fast casual Mexican food'},
+    {t:'YUM',n:'Yum! Brands',cap:'$35B',d:'KFC, Pizza Hut & Taco Bell'},
+    {t:'LULU',n:'Lululemon',cap:'$45B',d:'Premium athletic wear'},
+    {t:'ROST',n:'Ross Stores',cap:'$50B',d:'Off-price fashion retail'},
+    {t:'TJX',n:'TJX Companies',cap:'$130B',d:'TJ Maxx & Marshalls'},
+    {t:'ULTA',n:'Ulta Beauty',cap:'$18B',d:'Beauty retail'},
+    {t:'DRI',n:"Darden Restaurants",cap:'$20B',d:"Olive Garden & LongHorn"},
+    {t:'HLT',n:'Hilton',cap:'$55B',d:'Global hotel chain'},
+    {t:'ABNB',n:'Airbnb',cap:'$75B',d:'Home sharing platform'},
+    {t:'EBAY',n:'eBay',cap:'$30B',d:'Online marketplace'},
+    {t:'PG',n:'Procter & Gamble',cap:'$380B',d:'Consumer goods giant'},
+    {t:'KO',n:'Coca-Cola',cap:'$300B',d:'Global beverage leader'},
+    {t:'PEP',n:'PepsiCo',cap:'$210B',d:'Beverages & snacks'},
+    {t:'MDLZ',n:'Mondelez',cap:'$85B',d:'Oreo, Cadbury & snacks'},
+    {t:'CL',n:'Colgate-Palmolive',cap:'$65B',d:'Toothpaste & personal care'}
+  ],
+  energy:[
+    {t:'XOM',n:'ExxonMobil',cap:'$490B',d:'Largest US oil company'},
+    {t:'CVX',n:'Chevron',cap:'$290B',d:'Integrated oil & gas'},
+    {t:'COP',n:'ConocoPhillips',cap:'$130B',d:'E&P oil company'},
+    {t:'EOG',n:'EOG Resources',cap:'$65B',d:'Shale oil producer'},
+    {t:'PSX',n:'Phillips 66',cap:'$50B',d:'Refining & chemicals'},
+    {t:'VLO',n:'Valero Energy',cap:'$45B',d:'Oil refining'},
+    {t:'MPC',n:'Marathon Petroleum',cap:'$55B',d:'Oil refining & marketing'},
+    {t:'OXY',n:'Occidental Petroleum',cap:'$45B',d:'Oil & gas exploration'},
+    {t:'DVN',n:'Devon Energy',cap:'$15B',d:'Oil & natural gas E&P'},
+    {t:'HES',n:'Hess Corporation',cap:'$45B',d:'Oil & gas exploration'},
+    {t:'SLB',n:'SLB',cap:'$55B',d:'Oilfield services'},
+    {t:'HAL',n:'Halliburton',cap:'$30B',d:'Oilfield services'},
+    {t:'NEE',n:'NextEra Energy',cap:'$150B',d:'Largest renewable energy utility'},
+    {t:'DUK',n:'Duke Energy',cap:'$80B',d:'Electric utility'},
+    {t:'SO',n:'Southern Company',cap:'$95B',d:'Electric utility'},
+    {t:'D',n:'Dominion Energy',cap:'$40B',d:'Electric & gas utility'},
+    {t:'AEP',n:'American Electric Power',cap:'$40B',d:'Electric utility'},
+    {t:'EXC',n:'Exelon',cap:'$40B',d:'Nuclear & electric utility'},
+    {t:'PCG',n:'PG&E',cap:'$40B',d:'California electric & gas'},
+    {t:'WMB',n:'Williams Companies',cap:'$55B',d:'Natural gas pipelines'}
+  ],
+  industrial:[
+    {t:'GE',n:'GE Aerospace',cap:'$215B',d:'Jet engines & aviation'},
+    {t:'CAT',n:'Caterpillar',cap:'$190B',d:'Construction & mining equipment'},
+    {t:'HON',n:'Honeywell',cap:'$130B',d:'Aerospace & building tech'},
+    {t:'RTX',n:'RTX Corporation',cap:'$160B',d:'Defense & aerospace'},
+    {t:'LMT',n:'Lockheed Martin',cap:'$120B',d:'Defense contractor'},
+    {t:'NOC',n:'Northrop Grumman',cap:'$70B',d:'Defense & space'},
+    {t:'GD',n:'General Dynamics',cap:'$75B',d:'Defense & aerospace'},
+    {t:'BA',n:'Boeing',cap:'$100B',d:'Commercial & defense aircraft'},
+    {t:'DE',n:'John Deere',cap:'$115B',d:'Farm & construction equipment'},
+    {t:'EMR',n:'Emerson Electric',cap:'$65B',d:'Industrial automation'},
+    {t:'ITW',n:'Illinois Tool Works',cap:'$75B',d:'Industrial manufacturing'},
+    {t:'PH',n:'Parker Hannifin',cap:'$80B',d:'Motion & control systems'},
+    {t:'AME',n:'Ametek',cap:'$40B',d:'Electronic instruments'},
+    {t:'IR',n:'Ingersoll Rand',cap:'$35B',d:'Industrial equipment'},
+    {t:'CARR',n:'Carrier Global',cap:'$60B',d:'HVAC systems'},
+    {t:'TT',n:'Trane Technologies',cap:'$80B',d:'Climate control systems'},
+    {t:'OTIS',n:'Otis Worldwide',cap:'$35B',d:'Elevators & escalators'},
+    {t:'UPS',n:'UPS',cap:'$90B',d:'Package delivery'},
+    {t:'FDX',n:'FedEx',cap:'$65B',d:'Logistics & delivery'},
+    {t:'CSX',n:'CSX',cap:'$60B',d:'Railroad transportation'},
+    {t:'NSC',n:'Norfolk Southern',cap:'$55B',d:'Freight railroad'},
+    {t:'UNP',n:'Union Pacific',cap:'$140B',d:'Largest US railroad'},
+    {t:'WM',n:'Waste Management',cap:'$80B',d:'Waste collection & recycling'},
+    {t:'RSG',n:'Republic Services',cap:'$55B',d:'Waste management'},
+    {t:'FAST',n:'Fastenal',cap:'$45B',d:'Industrial fasteners & supplies'}
+  ],
+  realestate:[
+    {t:'PLD',n:'Prologis',cap:'$100B',d:'Industrial warehouses'},
+    {t:'AMT',n:'American Tower',cap:'$85B',d:'Cell towers & data centers'},
+    {t:'EQIX',n:'Equinix',cap:'$80B',d:'Data center REIT'},
+    {t:'WELL',n:'Welltower',cap:'$75B',d:'Senior housing & healthcare'},
+    {t:'SPG',n:'Simon Property Group',cap:'$58B',d:'Premium shopping malls'},
+    {t:'O',n:'Realty Income',cap:'$45B',d:'Net lease REIT — monthly dividends'},
+    {t:'DLR',n:'Digital Realty',cap:'$55B',d:'Data center REIT'},
+    {t:'PSA',n:'Public Storage',cap:'$55B',d:'Self-storage facilities'},
+    {t:'EXR',n:'Extra Space Storage',cap:'$30B',d:'Self-storage REIT'},
+    {t:'AVB',n:'AvalonBay Communities',cap:'$30B',d:'Luxury apartments'},
+    {t:'EQR',n:'Equity Residential',cap:'$28B',d:'Apartment communities'},
+    {t:'VTR',n:'Ventas',cap:'$20B',d:'Healthcare real estate'},
+    {t:'ARE',n:'Alexandria Real Estate',cap:'$15B',d:'Life science campuses'},
+    {t:'CCI',n:'Crown Castle',cap:'$40B',d:'Cell towers & fiber'},
+    {t:'SBAC',n:'SBA Communications',cap:'$25B',d:'Cell tower operator'}
+  ],
+  comms:[
+    {t:'NFLX',n:'Netflix',cap:'$380B',d:'Streaming entertainment'},
+    {t:'DIS',n:'Disney',cap:'$200B',d:'Entertainment & streaming'},
+    {t:'T',n:'AT&T',cap:'$160B',d:'Telecom & wireless'},
+    {t:'VZ',n:'Verizon',cap:'$175B',d:'Wireless & broadband'},
+    {t:'CMCSA',n:'Comcast',cap:'$145B',d:'Cable & media'},
+    {t:'SPOT',n:'Spotify',cap:'$80B',d:'Music streaming'},
+    {t:'PARA',n:'Paramount Global',cap:'$8B',d:'Media & streaming'},
+    {t:'WBD',n:'Warner Bros Discovery',cap:'$20B',d:'Media & HBO Max'},
+    {t:'CHTR',n:'Charter Communications',cap:'$50B',d:'Cable broadband'},
+    {t:'TMUS',n:'T-Mobile',cap:'$265B',d:'Wireless carrier'},
+    {t:'FOX',n:'Fox Corporation',cap:'$18B',d:'News & entertainment media'},
+    {t:'NYT',n:'New York Times',cap:'$8B',d:'News media & subscriptions'},
+    {t:'TTWO',n:'Take-Two Interactive',cap:'$30B',d:'Video game publisher'},
+    {t:'EA',n:'Electronic Arts',cap:'$35B',d:'Video game publisher'},
+    {t:'ATVI',n:'Activision Blizzard',cap:'$70B',d:'Video games — Call of Duty'}
+  ],
+  materials:[
+    {t:'LIN',n:'Linde',cap:'$220B',d:'Industrial gases — largest globally'},
+    {t:'APD',n:'Air Products',cap:'$55B',d:'Industrial gases & hydrogen'},
+    {t:'FCX',n:'Freeport-McMoRan',cap:'$60B',d:'Copper & gold mining'},
+    {t:'NEM',n:'Newmont',cap:'$50B',d:'Gold mining'},
+    {t:'DD',n:'DuPont',cap:'$30B',d:'Specialty chemicals'},
+    {t:'DOW',n:'Dow Inc.',cap:'$35B',d:'Materials science & chemicals'},
+    {t:'LYB',n:'LyondellBasell',cap:'$25B',d:'Plastics & chemicals'},
+    {t:'PPG',n:'PPG Industries',cap:'$28B',d:'Paints & coatings'},
+    {t:'SHW',n:'Sherwin-Williams',cap:'$90B',d:'Paints — market leader'},
+    {t:'NUE',n:'Nucor',cap:'$30B',d:'Steel production'},
+    {t:'STLD',n:'Steel Dynamics',cap:'$20B',d:'Steel manufacturer'},
+    {t:'ALB',n:'Albemarle',cap:'$7B',d:'Lithium for EV batteries'},
+    {t:'MP',n:'MP Materials',cap:'$2B',d:'Rare earth minerals'},
+    {t:'AA',n:'Alcoa',cap:'$8B',d:'Aluminum production'},
+    {t:'CF',n:'CF Industries',cap:'$14B',d:'Nitrogen fertilizers'}
+  ],
+  any:[
+    {t:'AAPL',n:'Apple',cap:'$3.3T',d:'Consumer electronics & services'},
+    {t:'MSFT',n:'Microsoft',cap:'$3.1T',d:'Cloud & enterprise software'},
+    {t:'NVDA',n:'NVIDIA',cap:'$3.0T',d:'GPUs & AI infrastructure'},
+    {t:'GOOGL',n:'Alphabet',cap:'$2.1T',d:'Search, ads & cloud'},
+    {t:'AMZN',n:'Amazon',cap:'$2.0T',d:'E-commerce & cloud'},
+    {t:'JPM',n:'JPMorgan Chase',cap:'$710B',d:'Largest US bank'},
+    {t:'WMT',n:'Walmart',cap:'$780B',d:'Largest US retailer'},
+    {t:'LLY',n:'Eli Lilly',cap:'$750B',d:'Diabetes & weight loss drugs'},
+    {t:'V',n:'Visa',cap:'$550B',d:'Global payments network'},
+    {t:'XOM',n:'ExxonMobil',cap:'$490B',d:'Largest US oil company'},
+    {t:'HD',n:'Home Depot',cap:'$360B',d:'Home improvement retail'},
+    {t:'COST',n:'Costco',cap:'$390B',d:'Membership warehouse clubs'},
+    {t:'MCD',n:"McDonald's",cap:'$210B',d:'Global fast food leader'},
+    {t:'GE',n:'GE Aerospace',cap:'$215B',d:'Jet engines & aviation'},
+    {t:'NFLX',n:'Netflix',cap:'$380B',d:'Streaming entertainment'}
+  ]
+};
+
+// ── BEST FIT (reworked) ────────────────────────────
+const CRIT_WEIGHTS={netMargin:1.5,fcfPositive:1.5,currentRatio:1.2,revenueGrowth:1.2,debtEquity:1.0,roe:1.0,grossMargin:0.8,peRatio:0.8,ocfGrowth:0.8,divYield:0.7};
+
+function calcFit(stockData){
+  const active=CRITERIA.filter(c=>critState[c.id].on);
+  if(!active.length)return{pct:0,breakdown:[],drag:[]};
+  const breakdown=[];
+  let wTotal=0,wSum=0;
+
+  active.forEach(c=>{
+    const target=critState[c.id].value;
+    const actual=c.fn(stockData);
+    const weight=CRIT_WEIGHTS[c.id]||1.0;
+    let score;
+
+    if(c.isBool){
+      score=actual===target?100:0;
+    }else{
+      const range=c.max-c.min||1;
+      if(c.higherBetter){
+        if(actual>=target){
+          // Above target — reward, but diminishing returns
+          const bonus=Math.min(15,((actual-target)/range)*50);
+          score=Math.min(100,85+bonus);
+        }else{
+          // Below target — penalize harder
+          const gap=(target-actual)/range;
+          score=Math.max(0,Math.round(85-gap*115));
+        }
+      }else{
+        // Lower is better
+        if(actual<=target){
+          const bonus=Math.min(15,((target-actual)/range)*50);
+          score=Math.min(100,85+bonus);
+        }else{
+          const gap=(actual-target)/range;
+          score=Math.max(0,Math.round(85-gap*115));
+        }
+      }
+      // Hard floors for critical metrics
+      if(c.id==='currentRatio'&&actual<1) score=Math.min(score,25);
+      if(c.id==='netMargin'&&actual<0) score=0;
+      if(c.id==='debtEquity'&&actual>3) score=Math.min(score,20);
+      if(c.id==='revenueGrowth'&&actual<-5) score=Math.min(score,15);
+    }
+    score=Math.round(score);
+    wTotal+=score*weight;
+    wSum+=weight;
+    breakdown.push({crit:c,target,actual,match:score,weight});
+  });
+
+  const pct=Math.round(wTotal/wSum);
+  // Identify biggest drag (bottom 2 that score below 70)
+  const sorted=[...breakdown].sort((a,b)=>a.match-b.match);
+  const drag=sorted.slice(0,2).filter(b=>b.match<70);
+  return{pct,breakdown,drag};
+}
+
+// ── HELPERS ───────────────────────────────────────
+function fmt(n){if(n===null||n===undefined)return'N/A';const a=Math.abs(n),s=n<0?'-':'';if(a>=1e12)return s+'$'+(a/1e12).toFixed(2)+'T';if(a>=1e9)return s+'$'+(a/1e9).toFixed(1)+'B';if(a>=1e6)return s+'$'+(a/1e6).toFixed(1)+'M';return s+'$'+a.toFixed(0);}
+function fitCol(p){if(p>=75)return{c:'var(--gr)',bg:'var(--gbg)',bd:'var(--gbd)'};if(p>=50)return{c:'var(--am)',bg:'var(--abg)',bd:'var(--abd)'};return{c:'var(--rd)',bg:'var(--rbg)',bd:'var(--rbd)'};}
+function fitWord(p){if(p>=80)return'Excellent Match';if(p>=65)return'Good Match';if(p>=50)return'Moderate Match';if(p>=35)return'Weak Match';return'Poor Match';}
+function showScr(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+function setModes(m){['mode-badge','mode-badge2','mode-badge3'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=m;});}
+
+// ── SETUP ─────────────────────────────────────────
+function startDemo(){
+  try{ST.mode='demo';}catch(e){}
+  try{setModes('Demo');}catch(e){}
+  try{
+    document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+    var s3=document.getElementById('scr-step3');
+    if(s3){s3.classList.add('active');}
+  }catch(e){}
+  try{window.scrollTo(0,0);}catch(e){}
+  try{toggleDemoMode(true);}catch(e){}
+}
+
+// ── STEP 1 — INDUSTRIES ───────────────────────────
+function buildIndustryGrid(){
+  const grid=document.getElementById('industry-grid');
+  grid.innerHTML='';
+  INDUSTRIES.forEach(ind=>{
+    const div=document.createElement('div');
+    div.className='ind-card'+(ST.selectedIndustry===ind.id?' selected':'');
+    div.id='ind-'+ind.id;
+    div.innerHTML=`<div class="ind-icon">${ind.icon}</div><div class="ind-name">${ind.name}</div><div class="ind-desc">${ind.desc}</div>`;
+    div.onclick=()=>selectIndustry(ind.id);
+    grid.appendChild(div);
+  });
+}
+
+function selectIndustry(id){
+  const idx=ST.selectedIndustries.indexOf(id);
+  if(idx>-1){
+    // Deselect
+    ST.selectedIndustries.splice(idx,1);
+    document.getElementById('ind-'+id).classList.remove('selected');
+  }else{
+    // Select
+    ST.selectedIndustries.push(id);
+    document.getElementById('ind-'+id).classList.add('selected');
+  }
+  // Update count badge
+  const count=ST.selectedIndustries.length;
+  const btn=document.getElementById('step1-next');
+  if(btn)btn.textContent=count===0?'Next — Set Your Targets →':`Next — ${count} ${count===1?'industry':'industries'} selected →`;
+}
+
+function goToStep2(){
+  if(!ST.selectedIndustries.length) ST.selectedIndustries=['any'];
+  
+  // Average defaults across all selected industries
+  const selected=INDUSTRIES.filter(i=>ST.selectedIndustries.includes(i.id));
+  const avgDefaults={};
+  const keys=Object.keys(selected[0].defaults);
+  keys.forEach(key=>{
+    const vals=selected.map(i=>i.defaults[key]);
+    avgDefaults[key]=Math.round((vals.reduce((a,b)=>a+b,0)/vals.length)*10)/10;
+  });
+  
+  // Apply averaged defaults
+  Object.entries(avgDefaults).forEach(([key,val])=>{
+    if(critState[key]){
+      critState[key].value=val;
+      const crit=CRITERIA.find(c=>c.id===key);
+      if(crit)crit.suggest=val;
+    }
+  });
+
+  const names=selected.map(i=>i.name).join(', ');
+  const s2ind=document.getElementById('s2-ind-label');
+  if(s2ind)s2ind.textContent=names.length>20?selected.length+' Industries':names;
+  const s2name=document.getElementById('s2-industry-name');
+  if(s2name)s2name.textContent=names.length>30?'your selected industries':names;
+  buildCriteriaPanel();
+  showScr('scr-step2');
+}
+
+function toggleDemoMode(isDemo){
+  const liveBar=document.getElementById('live-search-bar');
+  const demoBar=document.getElementById('demo-search-bar');
+  const splitPanel=document.getElementById('split-panel');
+  const bestWrap=document.getElementById('best-matches-wrap');
+  const indPicks=document.getElementById('industry-picks');
+  if(liveBar)liveBar.style.display=isDemo?'none':'block';
+  if(demoBar)demoBar.style.display=isDemo?'block':'none';
+  if(splitPanel)splitPanel.style.display=isDemo?'none':'grid';
+  if(bestWrap)bestWrap.style.display=isDemo?'none':'block';
+  if(indPicks&&indPicks.parentElement)indPicks.parentElement.style.display=isDemo?'none':'block';
+  if(isDemo)buildDemoGrid();
+}
+
+function goToStep3(){
+  const selected=INDUSTRIES.filter(i=>ST.selectedIndustries.includes(i.id));
+  const names=selected.map(i=>i.name).join(' & ');
+  const shortName=names.length>25?selected.length+' Industries':names;
+  // Safe element updates - don\'t crash if element missing
+  const indEl=document.getElementById('s3-industry-name');
+  if(indEl)indEl.textContent=shortName;
+  const cntEl=document.getElementById('active-count');
+  if(cntEl)cntEl.textContent=CRITERIA.filter(c=>critState[c.id].on).length;
+  showScr('scr-step3');
+  toggleDemoMode(false);
+  setTimeout(()=>{
+    buildStockSuggestions();
+    renderHist();
+  },50);
+}
+
+function buildStockSuggestions(){
+  const el=document.getElementById('industry-picks');
+  if(!el)return;
+  const ids=ST.selectedIndustries.length?ST.selectedIndustries:['any'];
+  let stocks=[];
+  ids.forEach(id=>{
+    const s=EXPLORE[id]||[];
+    s.slice(0,8).forEach(stock=>{if(!stocks.find(x=>x.t===stock.t))stocks.push(stock);});
+  });
+  if(!stocks.length)stocks=EXPLORE.any.slice(0,8);
+  stocks=stocks.slice(0,12);
+
+  // Chip style — compact, tappable
+  el.innerHTML=stocks.map(s=>`
+    <div onclick="quickSearch('${s.t}')" style="display:inline-flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--bd2);border-radius:40px;padding:8px 14px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--bl)';this.style.background='var(--s3)'" onmouseout="this.style.borderColor='var(--bd2)';this.style.background='var(--s2)'">
+      <span style="font-weight:800;font-size:13px;color:var(--bl);">${s.t}</span>
+      <span style="font-size:12px;color:var(--tx2);">${s.n.split(' ')[0]}</span>
+      <span style="font-size:10px;color:var(--tx3);">${s.cap}</span>
+    </div>`).join('');
+
+  // Build browse list
+  buildBrowseList();
+}
+
+function toggleBrowse(){
+  const panel=document.getElementById('browse-panel');
+  const arrow=document.getElementById('browse-arrow');
+  if(!panel)return;
+  const open=panel.style.display==='block';
+  panel.style.display=open?'none':'block';
+  if(arrow)arrow.textContent=open?'▼':'▲';
+}
+
+function buildBrowseList(){
+  const el=document.getElementById('browse-list');
+  if(!el)return;
+  const INDUSTRY_NAMES={tech:'Technology',finance:'Financial Services',healthcare:'Healthcare',consumer:'Consumer Brands',energy:'Energy',industrial:'Industrials',realestate:'Real Estate',comms:'Communication',materials:'Basic Materials',any:'All Industries'};
+  const ids=ST.selectedIndustries.length?ST.selectedIndustries:['any'];
+  let html='';
+  ids.forEach(id=>{
+    const stocks=EXPLORE[id]||[];
+    if(!stocks.length)return;
+    html+=`<div style="margin-bottom:16px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tx2);margin-bottom:8px;">${INDUSTRY_NAMES[id]||id}</div>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        ${stocks.map(s=>`<div onclick="quickSearch('${s.t}');toggleBrowse();" style="display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background='transparent'">
+          <span style="font-weight:700;font-size:13px;color:var(--bl);width:44px;flex-shrink:0;">${s.t}</span>
+          <span style="font-size:12px;flex:1;">${s.n}</span>
+          <span style="font-size:11px;color:var(--tx2);">${s.cap}</span>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  });
+  el.innerHTML=html||'<p class="muted small">Select an industry in Step 2 to browse stocks here.</p>';
+}
+
+function quickSearch(ticker){
+  document.getElementById('tick').value=ticker;
+  doSearch();
+}
+
+// ── STEP 2 — CRITERIA ─────────────────────────────
+function buildCriteriaPanel(){
+  const panel=document.getElementById('criteria-panel');
+  panel.innerHTML='';
+  CRITERIA.forEach(c=>{
+    const state=critState[c.id];
+    const div=document.createElement('div');
+    div.className='crit-card'+(state.on?' active':' off');
+    div.id='crit-'+c.id;
+
+    const displayVal=c.isBool?(state.value===1?'Positive Required':'Any')
+                              :c.fmt(state.value);
+
+    div.innerHTML=`
+      <div class="crit-header" onclick="toggleExpand('${c.id}',event)">
+        <div class="toggle ${state.on?'on':''}" id="tog-${c.id}" onclick="toggleCrit('${c.id}',event)"></div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;font-size:15px;margin-bottom:2px;">${c.name}</div>
+          <div class="muted small">${c.short}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;margin-right:8px;">
+          <div style="font-size:18px;font-weight:800;color:var(--bl);" id="val-${c.id}">${displayVal}</div>
+          <div class="muted small">Your target</div>
+        </div>
+        <span style="color:var(--tx3);font-size:11px;" id="arr-${c.id}">▼</span>
+      </div>
+      <div class="crit-body" id="body-${c.id}">
+        <div style="background:var(--s2);border-radius:var(--rs);padding:14px 16px;margin-bottom:14px;border-left:3px solid var(--bl);">
+          <p style="font-size:13px;line-height:1.8;color:var(--tx2);">${c.detail}</p>
+        </div>
+        ${c.isBool?`
+        <div style="display:flex;gap:10px;margin-bottom:8px;">
+          <button class="bp" style="flex:1;padding:10px;" onclick="updateBool('${c.id}',1)">✓ Must be Positive</button>
+          <button class="bs" style="flex:1;padding:10px;" onclick="updateBool('${c.id}',0)">Any (don\'t require)</button>
+        </div>
+        `:`
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span class="small muted">Your target: <strong style="color:var(--tx);" id="val2-${c.id}">${c.fmt(state.value)}</strong></span>
+          <span class="small" style="color:var(--am);">💡 Suggestion: <strong>${c.fmt(c.suggest)}</strong></span>
+        </div>
+        <input type="range" min="${c.min}" max="${c.max}" step="${c.step}" value="${state.value}" 
+          oninput="updateCrit('${c.id}',this.value)" style="margin-bottom:8px;"/>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tx3);">
+          <span>${c.fmt(c.min)}</span>
+          <span>${c.higherBetter?'Higher is better →':'← Lower is better'}</span>
+          <span>${c.fmt(c.max)}</span>
+        </div>
+        <button class="bg2 bsm" style="margin-top:10px;font-size:11px;" onclick="resetCrit('${c.id}')">↩ Reset to suggestion</button>
+        `}
+      </div>`;
+    panel.appendChild(div);
+  });
+}
+
+function toggleExpand(id,e){
+  if(e.target.closest('.toggle')||e.target.tagName==='BUTTON'||e.target.tagName==='INPUT')return;
+  const body=document.getElementById('body-'+id);
+  const arr=document.getElementById('arr-'+id);
+  const open=body.classList.contains('open');
+  body.classList.toggle('open',!open);
+  arr.textContent=open?'▼':'▲';
+}
+function toggleCrit(id,e){
+  e.stopPropagation();
+  critState[id].on=!critState[id].on;
+  document.getElementById('tog-'+id).classList.toggle('on',critState[id].on);
+  const card=document.getElementById('crit-'+id);
+  card.classList.toggle('active',critState[id].on);
+  card.classList.toggle('off',!critState[id].on);
+}
+function updateCrit(id,val){
+  const c=CRITERIA.find(x=>x.id===id);
+  critState[id].value=parseFloat(val);
+  const f=c.fmt(parseFloat(val));
+  document.getElementById('val-'+id).textContent=f;
+  const v2=document.getElementById('val2-'+id);
+  if(v2)v2.textContent=f;
+}
+function updateBool(id,val){
+  critState[id].value=val;
+  document.getElementById('val-'+id).textContent=val===1?'Positive Required':'Any';
+}
+function resetCrit(id){
+  const c=CRITERIA.find(x=>x.id===id);
+  critState[id].value=c.suggest;
+  const slider=document.querySelector(`#crit-${id} input[type=range]`);
+  if(slider)slider.value=c.suggest;
+  updateCrit(id,c.suggest);
+}
+
+// ── API FETCH ─────────────────────────────────────
+
+// ── DATA SANITIZER ────────────────────────────────
+// The data service sometimes returns numbers in wrong units or wildly wrong values
+// This catches and corrects them before they hit the screen
+function sanitize(d){
+  // Net profit margin: should be a decimal (0.15 = 15%) or small percent
+  // If > 2 it's almost certainly in wrong units (e.g. 14.83 instead of 0.1483)
+  if(d.netProfitMargin > 2) d.netProfitMargin = d.netProfitMargin / 100;
+  if(d.netProfitMargin < -2) d.netProfitMargin = d.netProfitMargin / 100;
+  // Cap at realistic extremes
+  if(d.netProfitMargin > 0.70) d.netProfitMargin = null;
+  if(d.netProfitMargin < -0.80) d.netProfitMargin = null;
+
+  // Dividend yield: should be decimal (0.03 = 3%) or small percent
+  // If > 0.30 (30%) it's almost certainly wrong
+  if(d.dividendYield > 0.30) d.dividendYield = d.dividendYield / 100;
+  if(d.dividendYield > 0.30) d.dividendYield = null; // still wrong after correction
+  if(d.dividendYield < 0) d.dividendYield = 0;
+
+  // ROE: should be percent like 18.5 (meaning 18.5%), not decimal
+  // If it comes back as 0.185 instead of 18.5, multiply up
+  if(d.roe !== null && d.roe !== 0 && Math.abs(d.roe) < 2 && Math.abs(d.roe) > 0) {
+    d.roe = d.roe * 100;
+  }
+  // Cap unrealistic ROE (Apple's ~160% is real but anything above 300 is wrong)
+  if(d.roe > 300) d.roe = null;
+  if(d.roe < -200) d.roe = null;
+
+  // Gross margin: should be percent like 45.5, not decimal 0.455
+  if(d.grossMargin > 0 && d.grossMargin < 1) d.grossMargin = d.grossMargin * 100;
+  if(d.grossMargin > 100) d.grossMargin = null;
+  if(d.grossMargin < 0) d.grossMargin = null;
+
+  // P/E ratio: should be positive and under 1000
+  if(d.peRatio < 0) d.peRatio = null;
+  if(d.peRatio > 1000) d.peRatio = null;
+
+  // Debt to equity: should be positive, rarely above 10
+  if(d.debtToEquity < 0) d.debtToEquity = Math.abs(d.debtToEquity);
+  if(d.debtToEquity > 20) d.debtToEquity = null;
+
+  // Current ratio: should be between 0.1 and 20
+  const curR = d.totalCurrentAssets / Math.max(d.totalCurrentLiabilities, 1);
+  if(curR > 20 || curR < 0) {
+    // Assets or liabilities are probably in wrong units — try to detect
+    // If one is dramatically larger, it might be in thousands vs millions
+    if(d.totalCurrentAssets > d.totalCurrentLiabilities * 1000) {
+      d.totalCurrentLiabilities = d.totalCurrentLiabilities * 1000;
+    }
+  }
+
+  // Revenue sanity: if revenue[0] is smaller than netIncome[0] by a lot, something is wrong
+  if(d.revenue && d.netIncome && d.revenue[0] > 0 && d.netIncome[0] > 0) {
+    if(d.netIncome[0] > d.revenue[0] * 0.8) {
+      // Net income can't realistically be 80%+ of revenue for most companies
+      // Likely a unit mismatch — set margin from revenue/netIncome directly
+      d.netProfitMargin = d.revenue[0] > 0 ? d.netIncome[0] / d.revenue[0] : null;
+      if(d.netProfitMargin > 0.70) d.netProfitMargin = null;
+    }
+  }
+
+  // OCF growth: should be a percent, cap at ±500%
+  if(d.ocfGrowth > 500) d.ocfGrowth = null;
+  if(d.ocfGrowth < -500) d.ocfGrowth = null;
+
+  // Industry averages: cap at realistic values
+  if(d.industryAvgPE > 100) d.industryAvgPE = 25;
+  if(d.industryAvgPE < 1) d.industryAvgPE = 15;
+  if(d.industryAvgDE > 10) d.industryAvgDE = 1.5;
+  if(d.industryAvgDE < 0) d.industryAvgDE = 0.8;
+
+  return d;
+}
+
+const WORKER_URL='https://stockmatch-api.stockmatch3.workers.dev/';
+
+async function fetchStock(ticker){
+  const t=ticker.toUpperCase().trim();
+  const r=await fetch(WORKER_URL+'?ticker='+encodeURIComponent(t));
+  if(!r.ok){
+    if(r.status===404)throw new Error('"'+t+'" not found. Check the ticker symbol (e.g. HD not HomeDepot).');
+    if(r.status===429)throw new Error('Busy right now — wait a few seconds and try again.');
+    throw new Error('Could not load data for "'+t+'". Try again.');
+  }
+  let parsed;
+  try{parsed=await r.json();}catch(e){throw new Error('Could not read data for "'+t+'". Try again.');}
+  if(parsed.error)throw new Error(parsed.error);
+  if(!parsed.companyName)throw new Error('"'+t+'" not found. Check the ticker symbol.');
+  // Adapt Finnhub-shaped data to fields the app expects
+  if(parsed.ocfGrowth===undefined||parsed.ocfGrowth===null)parsed.ocfGrowth=parsed.revenueGrowth||0;
+  if(parsed.industryAvgPE===undefined)parsed.industryAvgPE=22;
+  if(parsed.industryAvgDE===undefined)parsed.industryAvgDE=1.0;
+  if(!parsed.industry)parsed.industry=parsed.sector||'—';
+  if(!parsed.description)parsed.description=parsed.businessModel?parsed.businessModel.split('.')[0]+'.':'';
+  sanitize(parsed);
+  return parsed;
+}
+
+// ── SEARCH ────────────────────────────────────────
+async function doSearch(){
+  const ticker=document.getElementById('tick').value.trim().toUpperCase();
+  if(!ticker){alert('Enter a ticker symbol.');return;}
+  const _res=document.getElementById('res-div');
+  const _load=document.getElementById('load-div');
+  if(_res)_res.style.display='none';
+  if(_load)_load.style.display='block';
+  try{
+    let d=await fetchStock(ticker);
+    const fit=calcFit(d);
+    window._st=window._st||{};window._st[ticker]={d,fit};
+    ST.history=ST.history.filter(h=>h.ticker!==ticker);
+    ST.history.unshift({ticker,name:d.companyName,fit:fit.pct,date:new Date().toLocaleDateString()});
+    localStorage.setItem('sc-hist',JSON.stringify(ST.history.slice(0,30)));
+    if(_load)_load.style.display='none';
+    if(_res){_res.style.display='block';}
+    renderRow(ticker,d,fit);
+    renderHist();
+  }catch(e){
+    if(_load)_load.style.display='none';
+    if(_res)_res.style.display='block';
+    document.getElementById('res-list').innerHTML=`<div class="card" style="padding:22px;"><p style="color:var(--rd);font-weight:600;font-size:15px;margin-bottom:8px;">⚠ ${e.message}</p><p class="muted small">Make sure you typed the exact US ticker symbol (e.g. HD not HomeDepot).</p></div>`;
+  }
+}
+
+// ── RENDER ROW ────────────────────────────────────
+function renderRow(ticker,d,fit){
+  const sc=fitCol(fit.pct);
+  const marked=isMarked(ticker);
+  // Drag explanation
+  let dragHTML='';
+  if(fit.drag&&fit.drag.length){
+    dragHTML=`<div style="margin-top:10px;padding:10px 14px;background:var(--rbg);border-radius:var(--rs);border-left:3px solid var(--rd);">
+      <span style="font-size:11px;color:var(--rd);font-weight:600;">Pulling score down: </span>
+      <span style="font-size:11px;color:var(--tx2);">${fit.drag.map(b=>b.crit.name+' ('+b.match+'%)').join(' · ')}</span>
+    </div>`;
+  }
+  document.getElementById('res-list').innerHTML=`
+  <div class="srow fi" onclick="openDetail('${ticker}')">
+    <div class="match-ring" style="background:${sc.bg};border-color:${sc.c};color:${sc.c};width:64px;height:64px;transition:transform .15s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+      <span style="font-size:18px;font-weight:800;line-height:1;">${fit.pct}%</span>
+      <span style="font-size:9px;margin-top:1px;">match</span>
+    </div>
+    <div style="flex:1;min-width:0;">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px;">
+        <span style="font-weight:800;font-size:17px;">${ticker}</span>
+        <span class="muted">${d.companyName}</span>
+        <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:var(--s3);color:var(--tx2);">${d.sector||d.industry}</span>
+        <span class="badge" style="background:${sc.bg};color:${sc.c};border:1px solid ${sc.c};">${fitWord(fit.pct)}</span>
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        <span class="muted small">Margin: <strong style="color:var(--tx)">${d.netProfitMargin!=null?(d.netProfitMargin*100).toFixed(1)+'%':'N/A'}</strong></span>
+        <span class="muted small">P/E: <strong style="color:var(--tx)">${d.peRatio?d.peRatio.toFixed(1)+'x':'N/A'}</strong></span>
+        <span class="muted small">D/E: <strong style="color:var(--tx)">${d.debtToEquity?d.debtToEquity.toFixed(2):'N/A'}</strong></span>
+        <span class="muted small">ROE: <strong style="color:var(--tx)">${d.roe!=null?d.roe.toFixed(1)+'%':'N/A'}</strong></span>
+      </div>
+      ${dragHTML}
+    </div>
+    <button class="bookmark-btn" data-ticker="${ticker}" onclick="toggleMark('${ticker}','${d.companyName}',${fit.pct},event)" style="background:${marked?'var(--abg)':'var(--s2)'};border:1px solid ${marked?'var(--abd)':'var(--bd2)'};border-radius:var(--rs);padding:8px 12px;font-size:18px;color:var(--am);flex-shrink:0;" title="${marked?'Remove from marked':'Save stock'}">${marked?'⭐':'☆'}</button>
+      <span style="font-size:10px;color:var(--tx3);white-space:nowrap;">View →</span>
+    </div>
+  </div>`;
+}
+
+// ── DETAIL ────────────────────────────────────────
+function openDetail(ticker){
+  const c=window._st&&window._st[ticker];if(!c)return;
+  ST.current={ticker,...c};
+  document.getElementById('dh-tick').textContent=ticker;
+  document.getElementById('dh-name').textContent=c.d.companyName;
+  buildDetail(ticker,c.d,c.fit);
+  showScr('scr-detail');
+}
+
+function buildDetail(ticker,d,fit){
+  const sc=fitCol(fit.pct);
+  let h='';
+
+  const isM=isMarked(ticker);
+  h+=`<div style="margin-bottom:22px;">
+    <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:10px);">
+      <div class="match-ring" style="width:80px;height:80px;font-size:22px;background:${sc.bg};border-color:${sc.c};color:${sc.c};border-width:4px;">
+        <span style="font-weight:800;line-height:1;">${fit.pct}%</span>
+        <span style="font-size:10px;margin-top:2px;">match</span>
+      </div>
+      <div>
+        <div style="font-size:24px;font-weight:800;">${ticker} — ${d.companyName}</div>
+        <div style="font-size:18px;font-weight:700;color:${sc.c};margin-top:3px;">${fitWord(fit.pct)}</div>
+        <div class="muted small" style="margin-top:3px;">${d.sector||''} · ${d.industry||''} · $${d.currentPrice?d.currentPrice.toFixed(2):''}</div>
+      <button class="bookmark-btn" data-ticker="${ticker}" onclick="toggleMark('${ticker}','${d.companyName}',${fit.pct},event)" style="background:var(--s2);border:1px solid var(--bd2);border-radius:var(--rs);font-size:14px;padding:8px 14px;margin-top:10px;color:var(--am);">${isM?'⭐ Marked':'☆ Mark this stock'}</button>
+      </div>
+    </div>
+    <p class="muted small" style="line-height:1.8;">${d.description}</p>
+  </div>`;
+
+  // Drag explanation at top of detail
+  if(fit.drag&&fit.drag.length){
+    h+=`<div style="background:var(--rbg);border:1px solid var(--rbd);border-radius:var(--rs);padding:14px 16px;margin-bottom:16px;">
+      <p style="font-weight:600;color:var(--rd);margin-bottom:6px;">⚠ Where it falls short</p>
+      ${fit.drag.map(b=>`<p class="muted small" style="margin-bottom:4px;">• <strong style="color:var(--tx)">${b.crit.name}</strong> — Stock is ${b.crit.higherBetter?'below':'above'} your target. ${b.crit.short}.</p>`).join('')}
+    </div>`;
+  }
+  h+=`<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;"><h3 style="font-size:15px;font-weight:700;">Match Breakdown</h3><span class="muted small">Tap any row to adjust your targets</span></div><p class="muted small" style="margin-bottom:16px;">Green means the stock landed right where you wanted. Amber is close. Red means it missed — check if that matters to you before deciding.</p>`;
+  fit.breakdown.forEach(b=>{
+    const col=b.match>=75?'var(--gr)':b.match>=50?'var(--am)':'var(--rd)';
+    const actualDisplay=b.crit.isBool?(b.actual===1?'Positive ✓':'Negative ✗'):b.crit.fmt(b.actual);
+    const targetDisplay=b.crit.isBool?(b.target===1?'Positive Required':'Any'):b.crit.fmt(b.target);
+    h+=`<div style="margin-bottom:18px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <div><span style="font-weight:700;">${b.crit.name}</span><span class="muted small" style="margin-left:8px;">${b.crit.short}</span></div>
+        <span style="font-weight:800;font-size:15px;color:${col};">${b.match}%</span>
+      </div>
+      <div style="background:var(--s3);border-radius:6px;height:8px;overflow:hidden;margin-bottom:6px;">
+        <div style="height:100%;border-radius:6px;background:${col};width:${b.match}%;transition:width .5s;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <span class="muted small">${ticker}: <strong style="color:var(--tx)">${actualDisplay}</strong></span>
+        <span class="muted small">Your target: <strong style="color:var(--bl)">${targetDisplay}</strong></span>
+      </div>
+    </div>`;
+  });
+  h+=`</div>`;
+
+  h+=`<div class="card"><h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">Key Numbers</h3>
+  <div class="g4" style="margin-bottom:12px;">
+    <div class="inn" style="margin-bottom:0;text-align:center;"><div class="muted small" style="margin-bottom:4px;">Net Margin</div><div style="font-size:20px;font-weight:700;color:${d.netProfitMargin>0?'var(--gr)':'var(--rd)'};">${d.netProfitMargin!=null?(d.netProfitMargin*100).toFixed(1)+'%':'N/A'}</div></div>
+    <div class="inn" style="margin-bottom:0;text-align:center;"><div class="muted small" style="margin-bottom:4px;">Gross Margin</div><div style="font-size:20px;font-weight:700;">${d.grossMargin!=null&&d.grossMargin>0?d.grossMargin.toFixed(1)+'%':'N/A'}</div></div>
+    <div class="inn" style="margin-bottom:0;text-align:center;"><div class="muted small" style="margin-bottom:4px;">ROE</div><div style="font-size:20px;font-weight:700;">${d.roe!=null?d.roe.toFixed(1)+'%':'N/A'}</div></div>
+    <div class="inn" style="margin-bottom:0;text-align:center;"><div class="muted small" style="margin-bottom:4px;">P/E Ratio</div><div style="font-size:20px;font-weight:700;">${d.peRatio?d.peRatio.toFixed(1)+'x':'N/A'}</div></div>
+  </div>
+  <div class="g4">
+    <div class="inn" style="margin-bottom:0;text-align:center;"><div class="muted small" style="margin-bottom:4px;">Current Ratio</div><div style="font-size:20px;font-weight:700;">${d.totalCurrentAssets&&d.totalCurrentLiabilities?(d.totalCurrentAssets/d.totalCurrentLiabilities).toFixed(2)+'x':'N/A'}</div></div>
+    <div class="inn" style="margin-bottom:0;text-align:center;"><div class="muted small" style="margin-bottom:4px;">Debt / Equity</div><div style="font-size:20px;font-weight:700;">${d.debtToEquity?d.debtToEquity.toFixed(2):'N/A'}</div></div>
+    <div class="inn" style="margin-bottom:0;text-align:center;"><div class="muted small" style="margin-bottom:4px;">Free Cash Flow</div><div style="font-size:20px;font-weight:700;color:${d.freeCashFlow&&d.freeCashFlow[0]>0?'var(--gr)':'var(--rd)'};">${fmt(d.freeCashFlow&&d.freeCashFlow[0])}</div></div>
+    <div class="inn" style="margin-bottom:0;text-align:center;"><div class="muted small" style="margin-bottom:4px;">Dividend Yield</div><div style="font-size:20px;font-weight:700;">${d.dividendYield&&d.dividendYield>0?(d.dividendYield*100).toFixed(2)+'%':'None'}</div></div>
+  </div></div>`;
+
+  h+=`<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <h3>Long-Term Price Chart</h3>
+      <span class="badge bb">Weekly · 5yr</span>
+    </div>
+    <div id="tv-${ticker}" style="height:400px;border-radius:var(--rs);overflow:hidden;background:var(--s2);display:flex;align-items:center;justify-content:center;"><p class="muted small">Loading chart...</p></div>
+  </div>`;
+  if(d.chartNotes){
+    h+=`<div class="inn" style="margin-bottom:16px;border-left:3px solid var(--bl);"><p style="font-size:13px;line-height:1.8;color:var(--tx2);"><strong style="color:var(--tx);">What the chart tells you: </strong>${d.chartNotes}</p><p class="muted small" style="margin-top:8px;">On a weekly 5-year chart: look for a consistent upward slope, recoveries that happen quickly after drops, and how rough the 2022 selloff was. A stock that held up well or bounced back fast is usually a stronger business.</p></div>`;
+  }
+
+  // What the company does
+  if(d.businessModel){
+    h+=`<div class="card">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:10px;">How ${ticker} Makes Money</h3>
+      <p style="font-size:14px;line-height:1.8;color:var(--tx2);">${d.businessModel}</p>
+    </div>`;
+  }
+
+  // Competitive advantages
+  if(d.competitiveAdvantages){
+    h+=`<div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--gbg);border:2px solid var(--gbd);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🏰</div>
+        <h3 style="font-size:15px;font-weight:700;">Why Competitors Can't Easily Beat Them</h3>
+      </div>
+      <p style="font-size:14px;line-height:1.8;color:var(--tx2);">${d.competitiveAdvantages}</p>
+    </div>`;
+  }
+
+  // Management
+  if(d.managementNotes){
+    h+=`<div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--bbg);border:2px solid var(--bbd);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">👔</div>
+        <h3 style="font-size:15px;font-weight:700;">Management & Leadership</h3>
+      </div>
+      <p style="font-size:14px;line-height:1.8;color:var(--tx2);">${d.managementNotes}</p>
+    </div>`;
+  }
+
+
+
+  const saved=localStorage.getItem('note-'+ticker)||'';
+  h+=`<div class="card"><h3 style="margin-bottom:12px;">Your Notes on ${ticker}</h3><textarea rows="4" placeholder="Write down what you liked, what concerned you, and whether you'd actually invest. Your call." oninput="localStorage.setItem('note-${ticker}',this.value)" style="resize:vertical;line-height:1.8;">${saved}</textarea></div>`;
+
+  document.getElementById('detail-body').innerHTML=h;
+  setTimeout(()=>loadTV(ticker),100);
+}
+
+function loadTV(ticker){
+  const el=document.getElementById('tv-'+ticker);if(!el)return;
+  const s=document.createElement('script');s.src='https://s3.tradingview.com/tv.js';
+  s.onload=()=>{try{new TradingView.widget({container_id:'tv-'+ticker,symbol:ticker,interval:'W',timezone:'America/New_York',theme:'dark',style:'1',locale:'en',toolbar_bg:'#13203a',hide_side_toolbar:true,allow_symbol_change:false,width:'100%',height:400,backgroundColor:'#13203a'});}catch(e){el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;"><a href="https://tradingview.com/chart/?symbol='+ticker+'" target="_blank" class="bp bsm">Open on TradingView ↗</a></div>';}};
+  document.head.appendChild(s);
+}
+
+function copyPrompt(){
+  if(!ST.current)return;
+  const{ticker,d}=ST.current;
+  const p=`I am analyzing ${d.companyName} (${ticker}).\n\n1. COMPETITIVE ADVANTAGES: 3-4 sentences on their moat.\n\n2. MANAGEMENT: 3-4 sentences on leadership quality.\n\n3. LONG-TERM CHART: Multi-year trend and drawdown behavior.\n\nContext: ${d.description}`;
+  navigator.clipboard?navigator.clipboard.writeText(p).then(()=>alert('✓ Copied! Copied to clipboard.')):(() => {const t=document.createElement('textarea');t.value=p;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);alert('✓ Copied!');  var saveBtn=document.getElementById('btn-save');
+  if(saveBtn){
+    saveBtn.addEventListener('click',function(e){
+      e.preventDefault();
+      saveKey();
+    });
+  }
+})();
+}
+
+function goBack(){showScr('scr-step3');if(ST.mode==='demo'){toggleDemoMode(true);}else{renderHist();}}
+
+function renderHist(){
+  // Update best-matches panel on search tab
+  const el=document.getElementById('best-matches');
+  if(el){
+    if(!ST.history.length){
+      el.innerHTML='<p class="muted small" style="text-align:center;padding:20px 0;">Search a few stocks to see your top matches here.</p>';
+    }else{
+      const sorted=[...ST.history].sort((a,b)=>b.fit-a.fit).slice(0,10);
+      el.innerHTML=sorted.map(h=>{const sc=fitCol(h.fit);const mk=isMarked(h.ticker);return`<div style="display:flex;align-items:center;gap:8px;background:var(--s1);border:1px solid var(--bd);border-radius:var(--rs);padding:8px 12px;transition:border-color .15s;" onmouseover="this.style.borderColor='var(--bd2)'" onmouseout="this.style.borderColor='var(--bd)'"><div onclick="rerunMatch('${h.ticker}')" style="display:flex;align-items:center;gap:8px;flex:1;cursor:pointer;"><div style="width:34px;height:34px;border-radius:50%;background:${sc.bg};border:2px solid ${sc.c};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:10px;font-weight:800;color:${sc.c};">${h.fit}%</span></div><div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:13px;">${h.ticker} <span class="muted" style="font-weight:400;">${h.name.split(' ')[0]}</span></div><div class="muted small">${fitWord(h.fit)}</div></div></div><button class="bookmark-btn" data-ticker="${h.ticker}" onclick="toggleMark('${h.ticker}','${h.name}',${h.fit},event)" style="background:${mk?'var(--abg)':'transparent'};border:1px solid ${mk?'var(--abd)':'var(--bd)'};border-radius:6px;padding:4px 8px;font-size:14px;color:var(--am);flex-shrink:0;">${mk?'⭐':'☆'}</button></div>`;}).join('');
+    }
+  }
+  // Also update marked tab if visible
+  var _tm=document.getElementById('tab-marked');if(_tm&&_tm.classList.contains('tab-active'))renderMarked();
+}
+function clearHist(){if(!confirm('Clear all history?'))return;ST.history=[];localStorage.removeItem('sc-hist');renderHist();}
+
+
+
+// ── MARKED STOCKS ─────────────────────────────────
+let markedStocks=JSON.parse(localStorage.getItem('sc-marked')||'[]');
+
+function toggleMark(ticker,name,fit,e){
+  if(e)e.stopPropagation();
+  const idx=markedStocks.findIndex(m=>m.ticker===ticker);
+  if(idx>-1){
+    markedStocks.splice(idx,1);
+  }else{
+    markedStocks.push({ticker,name,fit,date:new Date().toLocaleDateString()});
+  }
+  localStorage.setItem('sc-marked',JSON.stringify(markedStocks));
+  // Update all bookmark icons for this ticker
+  document.querySelectorAll('.bookmark-btn[data-ticker="'+ticker+'"]').forEach(btn=>{
+    btn.textContent=isMarked(ticker)?'⭐':'☆';
+    btn.title=isMarked(ticker)?'Remove from marked':'Mark this stock';
+  });
+  if(document.getElementById('tab-marked').classList.contains('tab-active'))renderMarked();
+}
+
+function isMarked(ticker){return markedStocks.some(m=>m.ticker===ticker);}
+
+function renderMarked(){
+  const el=document.getElementById('marked-content');
+  if(!el)return;
+  if(!markedStocks.length){
+    el.innerHTML='<div style="text-align:center;padding:40px;"><div style="font-size:40px;margin-bottom:12px;">⭐</div><p class="muted" style="line-height:1.7;">No stocks marked yet.<br>Tap ☆ on any stock to save it here.</p></div>';
+    return;
+  }
+  el.innerHTML=markedStocks.map(m=>{
+    const sc=m.fit!==null?fitCol(m.fit):{c:'var(--tx2)',bg:'var(--s3)'};
+    const fitLabel=m.fit!==null?m.fit+'% match':'Not matched yet';
+    return`<div class="srow">
+      <div class="match-ring" style="width:52px;height:52px;background:${sc.bg};border-color:${sc.c};color:${sc.c};border-width:2px;font-size:12px;cursor:pointer;" onclick="rerunMatch('${m.ticker}')">
+        <span style="font-weight:800;">${m.fit!==null?m.fit+'%':'?'}</span>
+      </div>
+      <div style="flex:1;cursor:pointer;" onclick="rerunMatch('${m.ticker}')">
+        <div style="font-weight:700;font-size:15px;">${m.ticker} <span class="muted" style="font-weight:400;">${m.name}</span></div>
+        <div class="muted small">Saved ${m.date} · ${fitLabel}</div>
+        ${m.fit===null?'<div class="muted small" style="color:var(--bl);">Tap to run match →</div>':''}
+      </div>
+      <button onclick="removeMarked('${m.ticker}',event)" style="background:transparent;color:var(--am);font-size:18px;padding:8px;" title="Remove">⭐</button>
+    </div>`;
+  }).join('');
+}
+
+
+function bookmarkFromBrowse(ticker, name, e){
+  if(e)e.stopPropagation();
+  // Save with fit=null meaning "saved to explore, not yet matched"
+  const existing=markedStocks.find(m=>m.ticker===ticker);
+  if(existing){
+    // Already marked — unmark
+    markedStocks=markedStocks.filter(m=>m.ticker!==ticker);
+    localStorage.setItem('sc-marked',JSON.stringify(markedStocks));
+    const btn=e.target.closest('button');
+    if(btn){btn.textContent='☆';btn.style.background='transparent';btn.style.borderColor='var(--bd)';}
+  }else{
+    markedStocks.push({ticker,name,fit:null,date:new Date().toLocaleDateString()});
+    localStorage.setItem('sc-marked',JSON.stringify(markedStocks));
+    const btn=e.target.closest('button');
+    if(btn){btn.textContent='⭐';btn.style.background='var(--abg)';btn.style.borderColor='var(--abd)';}
+  }
+  var _tm=document.getElementById('tab-marked');if(_tm&&_tm.classList.contains('tab-active'))renderMarked();
+}
+
+function removeMarked(ticker,e){
+  if(e)e.stopPropagation();
+  markedStocks=markedStocks.filter(m=>m.ticker!==ticker);
+  localStorage.setItem('sc-marked',JSON.stringify(markedStocks));
+  renderMarked();
+}
+
+
+
+function showSettingsModal(){
+  var modal=document.getElementById('settings-modal');
+  if(modal)modal.style.display='flex';
+}
+function hideSettingsModal(){
+  var modal=document.getElementById('settings-modal');
+  if(modal)modal.style.display='none';
+}
+function clearHistory(){
+  ST.history=[];
+  localStorage.removeItem('sc-hist');
+  if(typeof renderHist==='function')renderHist();
+  if(typeof renderMarked==='function')renderMarked();
+  hideSettingsModal();
+  alert('Search history cleared.');
+}
+
+function rerunMatch(ticker){
+  document.getElementById('tick').value=ticker;
+  switchTab('search');
+  doSearch();
+}
+
+
+// ── TAB SWITCHING ─────────────────────────────────
+function switchTab(tab){
+  ['search','explore','marked'].forEach(t=>{
+    document.getElementById('tab-content-'+t).style.display=t===tab?'block':'none';
+    document.getElementById('tab-'+t).classList.toggle('tab-active',t===tab);
+  });
+  if(tab==='explore')buildExploreContent();
+  if(tab==='marked')renderMarked();
+}
+
+function buildExploreContent(){
+  const el=document.getElementById('explore-content');
+  if(!el)return;
+  // Show selected industries or all
+  const selected=ST.selectedIndustries.length?ST.selectedIndustries:['any'];
+  const INDUSTRY_NAMES={tech:'Technology',finance:'Financial Services',healthcare:'Healthcare',consumer:'Consumer Brands',energy:'Energy',industrial:'Industrials',realestate:'Real Estate',comms:'Communication',materials:'Basic Materials',any:'All Industries'};
+  let html='';
+  selected.forEach(id=>{
+    const stocks=EXPLORE[id]||[];
+    if(!stocks.length)return;
+    html+=`<div style="margin-bottom:28px;">
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:12px;color:var(--bl);">${INDUSTRY_NAMES[id]||id} <span class="muted small" style="font-weight:400;">${stocks.length} stocks</span></h3>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${stocks.map(s=>`
+          <div style="display:flex;align-items:center;gap:12px;background:var(--s1);border:1px solid var(--bd);border-radius:var(--rs);padding:12px 16px;transition:border-color .15s;" onmouseover="this.style.borderColor='var(--bd2)'" onmouseout="this.style.borderColor='var(--bd)'">
+            <div onclick="quickSearch('${s.t}')" style="display:flex;align-items:center;gap:12px;flex:1;cursor:pointer;">
+              <div style="width:44px;text-align:center;flex-shrink:0;">
+                <div style="font-weight:800;font-size:14px;color:var(--bl);">${s.t}</div>
+                <div style="font-size:9px;color:var(--tx2);">${s.cap}</div>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:600;font-size:13px;">${s.n}</div>
+                <div class="muted small">${s.d}</div>
+              </div>
+            </div>
+            <button onclick="bookmarkFromBrowse('${s.t}','${s.n}',event)" class="bookmark-btn" data-ticker="${s.t}" style="background:transparent;border:1px solid var(--bd);border-radius:6px;padding:6px 10px;font-size:14px;color:var(--am);flex-shrink:0;" title="Save for later">☆</button>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+  });
+  el.innerHTML=html||'<p class="muted small" style="text-align:center;padding:28px;">Select an industry in Step 2 to see stocks here.</p>';
+}
+
+
+// ── DEMO GRID ─────────────────────────────────────
+function buildDemoGrid(){
+  const el=document.getElementById('demo-grid');
+  if(!el){console.error('demo-grid not found');return;}
+  try{
+    const stocks=Object.entries(DEMO).map(([ticker,d])=>({ticker,d}));
+    el.innerHTML=stocks.map(({ticker,d})=>`
+      <div onclick="openDemoStock('${ticker}')" style="background:var(--s1);border:1px solid var(--bd);border-radius:var(--r);padding:14px;cursor:pointer;transition:all .18s;box-shadow:var(--shadow);" onmouseover="this.style.borderColor='rgba(59,130,246,.4)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--bd)';this.style.transform='none'">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <span style="font-weight:800;font-size:16px;color:var(--bl);">${ticker}</span>
+          <span style="font-size:10px;padding:2px 7px;background:var(--s3);border-radius:20px;color:var(--tx2);">${d.sector||''}</span>
+        </div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.companyName||ticker}</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <span style="font-size:11px;color:var(--tx2);">Margin: <strong style="color:${(d.netProfitMargin||0)>0?'var(--gr)':'var(--rd)'}">${((d.netProfitMargin||0)*100).toFixed(0)}%</strong></span>
+          <span style="font-size:11px;color:var(--tx2);">P/E: <strong style="color:var(--tx)">${d.peRatio?d.peRatio.toFixed(0)+'x':'N/A'}</strong></span>
+        </div>
+      </div>`).join('');
+  }catch(err){console.error('buildDemoGrid error:',err);}
+}
+
+function openDemoStock(ticker){
+  const d=DEMO[ticker];
+  if(!d)return;
+  const normalized=d;
+  ST.current={ticker,d:normalized,fit:null};
+  document.getElementById('dh-tick').textContent=ticker;
+  document.getElementById('dh-name').textContent=normalized.companyName;
+  buildDemoDetail(ticker,normalized);
+  showScr('scr-detail');
+}
+
+function buildDemoDetail(ticker,d){
+  let h='';
+  // Company header - no match ring in demo
+  h+=`<div style="margin-bottom:22px;">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:10px;">
+      <div style="width:64px;height:64px;border-radius:50%;background:var(--bbg);border:2px solid var(--bbd);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:var(--bl);">${ticker.slice(0,2)}</div>
+      <div>
+        <div style="font-size:22px;font-weight:800;letter-spacing:-.01em;">${ticker} — ${d.companyName}</div>
+        <div class="muted small" style="margin-top:3px;">${d.sector} · ${d.industry}${d.currentPrice?' · $'+d.currentPrice.toFixed(2):''}</div>
+        <button onclick="bookmarkFromBrowse('${ticker}','${d.companyName}',event)" class="bookmark-btn" data-ticker="${ticker}" style="background:var(--s2);border:1px solid var(--bd2);border-radius:var(--rs);font-size:12px;padding:5px 12px;margin-top:8px;color:var(--am);">☆ Save stock</button>
+      </div>
+    </div>
+    <p class="muted small" style="line-height:1.8;">${d.description}</p>
+  </div>`;
+
+  // CTA to set up profile instead of match score
+  h+=`<div class="card" style="background:var(--bbg);border-color:var(--bbd);text-align:center;padding:24px;margin-bottom:16px;">
+    <div style="font-size:28px;margin-bottom:10px;">📊</div>
+    <h3 style="margin-bottom:8px;">Want to see your match score?</h3>
+    <p class="muted small" style="margin-bottom:16px;line-height:1.7;">Connect your data key and complete your investor profile to see exactly how well ${ticker} fits your personal criteria.</p>
+    <button class="bp" onclick="showSettingsModal()" style="padding:11px 24px;">Set Up Your Profile →</button>
+  </div>`;
+
+  // Key numbers
+  h+=`<div class="card"><h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">Key Numbers</h3>
+  <div class="g4" style="margin-bottom:12px;">
+    <div class="inn" style="margin-bottom:0;text-align:center;"><div class="muted small" style="margin-bottom:4px;">Net Margin</div><div style="font-size:20px;font-weight:700;color:${d.netProfitMargin>0?'var(--gr)':'var(--rd)'};">${(d.netProfitMargin*100).toFixed(1)}%</div></div>
+    <div class="inn" style="margin-bottom:0;text-align:center;"><div class="muted small" style="margin-bottom:4px;">Gross Margin</div><div style="font-size:20px;font-weight:700;">${d.grossMargin?d.grossMargin.toFixed(1)+'%':'N/A'}</div></div>
+    <div class="inn" style="margin-bottom:0;text-align:center;"><div class="muted small" style="margin-bottom:4px;">ROE</div><div style="font-size:20px;font-weight:700;">${d.roe?d.roe.toFixed(1)+'%':'N/A'}</div></div>
+    <div class="inn" style="margin-bottom:0;text-align:center;"><div class="muted small" style="margin-bottom:4px;">P/E Ratio</div><div style="font-size:20px;font-weight:700;">${d.peRatio?d.peRatio.toFixed(1)+'x':'N/A'}</div></div>
+  </div>
+  <div class="g4">
+    <div class="inn" style="margin-bottom:0;text-align:center;"><div class="muted small" style="margin-bottom:4px;">Current Ratio</div><div style="font-size:20px;font-weight:700;">${d.totalCurrentAssets&&d.totalCurrentLiabilities?(d.totalCurrentAssets/d.totalCurrentLiabilities).toFixed(2)+'x':'N/A'}</div></div>
+    <div class="inn" style="margin-bottom:0;text-align:center;"><div class="muted small" style="margin-bottom:4px;">Debt / Equity</div><div style="font-size:20px;font-weight:700;">${d.debtToEquity?d.debtToEquity.toFixed(2):'N/A'}</div></div>
+    <div class="inn" style="margin-bottom:0;text-align:center;"><div class="muted small" style="margin-bottom:4px;">Free Cash Flow</div><div style="font-size:20px;font-weight:700;color:${d.freeCashFlow&&d.freeCashFlow[0]>0?'var(--gr)':'var(--rd)'};">${fmt(d.freeCashFlow&&d.freeCashFlow[0])}</div></div>
+    <div class="inn" style="margin-bottom:0;text-align:center;"><div class="muted small" style="margin-bottom:4px;">Dividend Yield</div><div style="font-size:20px;font-weight:700;">${d.dividendYield&&d.dividendYield>0?(d.dividendYield*100).toFixed(2)+'%':'None'}</div></div>
+  </div></div>`;
+
+  // Chart
+  h+=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><h3 style="font-size:15px;font-weight:700;">Long-Term Price Chart</h3><span class="badge bb">Weekly · 5yr</span></div><div id="tv-${ticker}" style="height:380px;border-radius:var(--rs);overflow:hidden;background:var(--s2);display:flex;align-items:center;justify-content:center;"><p class="muted small">Loading chart...</p></div>${d.chartNotes?`<div style="margin-top:12px;padding:12px 14px;background:var(--s2);border-radius:var(--rs);border-left:3px solid var(--bl);"><p style="font-size:13px;line-height:1.8;color:var(--tx2);"><strong style="color:var(--tx);">What the chart tells you: </strong>${d.chartNotes}</p></div>`:''}</div>`;
+
+  // Business model
+  if(d.businessModel){h+=`<div class="card"><h3 style="font-size:15px;font-weight:700;margin-bottom:10px;">How ${ticker} Makes Money</h3><p style="font-size:14px;line-height:1.8;color:var(--tx2);">${d.businessModel}</p></div>`;}
+
+  // Competitive advantages
+  if(d.competitiveAdvantages){h+=`<div class="card"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:34px;height:34px;border-radius:50%;background:var(--gbg);border:1px solid var(--gbd);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">🏰</div><h3 style="font-size:15px;font-weight:700;">Why Competitors Can't Easily Beat Them</h3></div><p style="font-size:14px;line-height:1.8;color:var(--tx2);">${d.competitiveAdvantages}</p></div>`;}
+
+  // Management
+  if(d.managementNotes){h+=`<div class="card"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:34px;height:34px;border-radius:50%;background:var(--bbg);border:1px solid var(--bbd);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">👔</div><h3 style="font-size:15px;font-weight:700;">Management & Leadership</h3></div><p style="font-size:14px;line-height:1.8;color:var(--tx2);">${d.managementNotes}</p></div>`;}
+
+  // Notes
+  const saved=localStorage.getItem('note-'+ticker)||'';
+  h+=`<div class="card"><h3 style="font-size:15px;font-weight:700;margin-bottom:12px;">Your Notes on ${ticker}</h3><textarea rows="4" placeholder="Write down what you liked, what concerned you, and whether you'd actually invest. Your call." oninput="localStorage.setItem('note-${ticker}',this.value)" style="resize:vertical;line-height:1.8;">${saved}</textarea></div>`;
+
+  document.getElementById('detail-body').innerHTML=h;
+  setTimeout(()=>loadTV(ticker),100);
+}
+
+// ── SURVEY ────────────────────────────────────────
+// Criteria adjustments based on investing profile
+const PROFILE_PRESETS={
+  // goal_horizon_risk -> criteria overrides
+  growth_long_high:  {netMargin:15,currentRatio:1.5,debtEquity:0.8,revenueGrowth:20,peRatio:35,divYield:0,roe:18,grossMargin:50,ocfGrowth:15},
+  growth_long_medium:{netMargin:15,currentRatio:1.5,debtEquity:0.7,revenueGrowth:15,peRatio:28,divYield:0.5,roe:16,grossMargin:45,ocfGrowth:12},
+  growth_medium_high:{netMargin:12,currentRatio:1.5,debtEquity:0.8,revenueGrowth:18,peRatio:30,divYield:0,roe:15,grossMargin:45,ocfGrowth:12},
+  growth_medium_medium:{netMargin:12,currentRatio:1.5,debtEquity:0.7,revenueGrowth:12,peRatio:25,divYield:0.5,roe:14,grossMargin:40,ocfGrowth:10},
+  growth_short_medium:{netMargin:12,currentRatio:1.8,debtEquity:0.6,revenueGrowth:10,peRatio:22,divYield:0.5,roe:14,grossMargin:40,ocfGrowth:10},
+  income_long_low:   {netMargin:15,currentRatio:1.5,debtEquity:0.7,revenueGrowth:5,peRatio:18,divYield:3.5,roe:14,grossMargin:40,ocfGrowth:5},
+  income_medium_low: {netMargin:14,currentRatio:1.5,debtEquity:0.7,revenueGrowth:4,peRatio:16,divYield:3.0,roe:13,grossMargin:38,ocfGrowth:4},
+  income_long_medium:{netMargin:14,currentRatio:1.5,debtEquity:0.8,revenueGrowth:6,peRatio:20,divYield:2.5,roe:14,grossMargin:40,ocfGrowth:5},
+  income_short_low:  {netMargin:14,currentRatio:1.8,debtEquity:0.5,revenueGrowth:3,peRatio:15,divYield:3.5,roe:12,grossMargin:38,ocfGrowth:3},
+  safety_long_low:   {netMargin:12,currentRatio:2.0,debtEquity:0.5,revenueGrowth:5,peRatio:18,divYield:2.0,roe:12,grossMargin:38,ocfGrowth:5},
+  safety_medium_low: {netMargin:12,currentRatio:2.0,debtEquity:0.5,revenueGrowth:4,peRatio:16,divYield:2.0,roe:11,grossMargin:35,ocfGrowth:4},
+  safety_short_low:  {netMargin:12,currentRatio:2.5,debtEquity:0.4,revenueGrowth:3,peRatio:15,divYield:2.5,roe:11,grossMargin:35,ocfGrowth:3},
+  safety_long_medium:{netMargin:12,currentRatio:1.8,debtEquity:0.6,revenueGrowth:5,peRatio:18,divYield:1.5,roe:12,grossMargin:38,ocfGrowth:5},
+  balanced_long_medium:{netMargin:13,currentRatio:1.7,debtEquity:0.7,revenueGrowth:9,peRatio:22,divYield:1.5,roe:14,grossMargin:40,ocfGrowth:8},
+  balanced_medium_medium:{netMargin:12,currentRatio:1.6,debtEquity:0.7,revenueGrowth:8,peRatio:20,divYield:1.5,roe:13,grossMargin:38,ocfGrowth:7},
+  balanced_long_low: {netMargin:13,currentRatio:1.8,debtEquity:0.6,revenueGrowth:7,peRatio:20,divYield:2.0,roe:13,grossMargin:38,ocfGrowth:6},
+  balanced_short_low:{netMargin:12,currentRatio:2.0,debtEquity:0.5,revenueGrowth:5,peRatio:18,divYield:2.0,roe:12,grossMargin:36,ocfGrowth:5},
+};
+
+const PROFILE_LABELS={
+  growth:'Growth Investor',income:'Income Investor',safety:'Conservative Investor',balanced:'Balanced Investor'
+};
+const PROFILE_DESC={
+  growth_long_high:'You are a long-term growth investor comfortable with risk. Your targets prioritize fast revenue growth, high profitability, and strong cash flow. Dividends are not a priority.',
+  growth_long_medium:'You are a long-term growth investor with moderate risk tolerance. Your targets balance strong growth with some financial stability.',
+  growth_medium_high:'You want aggressive growth over a medium timeframe. Your targets favor high growth rates and profitability over safety metrics.',
+  growth_medium_medium:'You want solid growth over the next few years with manageable risk. Your targets focus on consistent revenue growth and strong margins.',
+  growth_short_medium:'You want growth over a shorter window with moderate risk. Your targets emphasize near-term profitability and manageable debt.',
+  income_long_low:'You are a conservative long-term income investor. Your targets prioritize dividend yield, financial stability, and consistent cash flow.',
+  income_medium_low:'You want reliable dividend income over a medium term with low risk. Your targets focus on dividend yield and financial health.',
+  income_long_medium:'You want steady income with some growth potential long-term. Your targets balance dividend yield with decent growth metrics.',
+  income_short_low:'You want safe dividend income in the near term. Your targets prioritize yield, low debt, and high current ratio.',
+  safety_long_low:'You are a conservative long-term investor. Capital preservation is your priority. Your targets emphasize financial health and stability above all.',
+  safety_medium_low:'You prioritize safety over a medium timeframe. Your targets favor strong liquidity, low debt, and consistent profitability.',
+  safety_short_low:'You want the safest possible stocks over a short period. Your targets are very conservative — strong cash positions and low risk metrics.',
+  safety_long_medium:'You lean conservative long-term but can handle some risk. Your targets balance safety with reasonable growth potential.',
+  balanced_long_medium:'You are a balanced long-term investor. Your targets give equal weight to growth, income, and safety — a well-rounded approach.',
+  balanced_medium_medium:'You want a balanced portfolio over the next few years. Your targets consider all criteria without overweighting any single factor.',
+  balanced_long_low:'You take a balanced but cautious long-term approach. Your targets slightly favor stability while still looking for growth.',
+  balanced_short_low:'You want balanced exposure in the short term with low risk. Your targets are moderately conservative across all criteria.',
+};
+
+function selectOpt(el){
+  const q=el.dataset.q;
+  const v=el.dataset.v;
+  // Deselect others in same question
+  document.querySelectorAll(`.survey-opt[data-q="${q}"]`).forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  ST.survey[q]=v;
+  // Enable next if all 3 answered
+  const allAnswered=ST.survey.goal&&ST.survey.horizon&&ST.survey.risk;
+  const btn=document.getElementById('survey-next');
+  btn.disabled=!allAnswered;
+  btn.style.opacity=allAnswered?'1':'0.5';
+}
+
+function completeSurvey(){
+  const{goal,horizon,risk}=ST.survey;
+  if(!goal||!horizon||!risk){alert('Please answer all 3 questions.');return;}
+  
+  // Find best matching preset
+  const key=goal+'_'+horizon+'_'+risk;
+  const preset=PROFILE_PRESETS[key]||PROFILE_PRESETS[goal+'_long_medium']||PROFILE_PRESETS['balanced_long_medium'];
+  
+  // Apply to criteria defaults
+  Object.entries(preset).forEach(([k,v])=>{
+    if(critState[k]){
+      critState[k].value=v;
+      const crit=CRITERIA.find(c=>c.id===k);
+      if(crit)crit.suggest=v;
+    }
+  });
+  
+  // Store profile
+  ST.surveyPreset=preset;
+  ST.profileKey=key;
+  
+  // Show profile summary before moving to step 1
+  showProfileSummary(goal,horizon,risk,key);
+}
+
+function showProfileSummary(goal,horizon,risk,key){
+  const label=PROFILE_LABELS[goal]||'Investor';
+  const desc=PROFILE_DESC[key]||`You are a ${goal} investor with a ${horizon}-term horizon and ${risk} risk tolerance.`;
+  
+  // Show a brief summary modal/card on the survey page
+  const wrap=document.querySelector('#scr-survey .wrap');
+  const existing=document.getElementById('profile-summary');
+  if(existing)existing.remove();
+  
+  const summary=document.createElement('div');
+  summary.id='profile-summary';
+  summary.className='card fi';
+  summary.style.cssText='border-color:var(--bl);background:var(--bbg);margin-top:16px;';
+  const goalIcons={growth:'🚀',income:'💰',safety:'🛡️',balanced:'⚖️'};
+  const goalIcon=goalIcons[goal]||'📊';
+  summary.innerHTML=`
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+      <div style="width:52px;height:52px;border-radius:50%;background:var(--bl);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">
+        ${goalIcon}
+      </div>
+      <div>
+        <div style="font-size:18px;font-weight:800;">${label}</div>
+        <div class="muted small">${horizon.charAt(0).toUpperCase()+horizon.slice(1)}-term horizon · ${risk.charAt(0).toUpperCase()+risk.slice(1)} risk tolerance</div>
+      </div>
+    </div>
+    <p style="font-size:13px;line-height:1.8;color:var(--tx2);margin-bottom:16px;">${desc}</p>
+    <button class="bp" style="width:100%;font-size:15px;padding:13px;" onclick="showScr('scr-step1')">
+      Next — Pick Your Industry →
+    </button>`;
+  wrap.appendChild(summary);
+  summary.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+// ── INIT ──────────────────────────────────────────
+try{buildIndustryGrid();}catch(e){console.error('buildIndustryGrid:',e);}
+</script>
+
+<!-- Settings / About Modal -->
+<div id="settings-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:999;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--s1);border:1px solid var(--bd2);border-radius:var(--r);padding:24px;width:100%;max-width:420px;position:relative;">
+    <button onclick="hideSettingsModal()" style="position:absolute;top:16px;right:16px;background:var(--s3);border:none;color:var(--tx2);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:16px;line-height:1;">×</button>
+    <h3 style="font-size:17px;font-weight:700;margin-bottom:12px;">About StockMatch</h3>
+    <p style="font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:14px;">StockMatch matches US stocks to your personal investing style using real financial data, then explains every number in plain English.</p>
+    <p style="font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:14px;">No signup or key needed — just search any ticker and get instant analysis.</p>
+    <div style="background:var(--abg);border:1px solid var(--abd);border-radius:9px;padding:12px;margin-bottom:14px;">
+      <p style="font-size:12px;color:var(--tx2);line-height:1.6;">⚠ Educational tool, not financial advice. Always do your own research before investing.</p>
+    </div>
+    <button onclick="clearHistory()" style="width:100%;padding:10px;background:transparent;color:var(--tx2);border:1px solid var(--bd);border-radius:9px;font-size:13px;cursor:pointer;font-family:inherit;">Clear my search history</button>
+  </div>
+</div>
+
+</body>
+</html>
