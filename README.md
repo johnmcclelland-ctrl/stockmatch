@@ -1,4 +1,5 @@
 # 📊 StockMatch
+<img width="800" height="431" alt="stockmatch-demo-lite (1)" src="https://github.com/user-attachments/assets/eb25606f-3d08-4493-a8b8-c5b632b07d9e" />
 
 **A beginner-friendly stock screener that matches stocks to your personal investing style.**
 
